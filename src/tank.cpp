@@ -4,19 +4,52 @@ void Tank::show(void) {
     tank_sprite_->pushSprite(x_pos, y_pos);
 }
 
-void Tank::move(size_t x, size_t y) {
+void Tank::move(int x, int y) {
     tft_.pushImage(x_pos, y_pos, DEFAULT_TANK_WIDTH, DEFAULT_TANK_HEIGHT, background_buffer_); // restoring the background pixels before moving the tank to a new position
+
+    if (x && y) return; // disallow diagonal movement
+    if (y > 0 && direction_ != TankDirection::DOWN) {
+        set_direction(TankDirection::DOWN);
+    } else if (y < 0 && direction_ != TankDirection::UP) {
+        set_direction(TankDirection::UP);
+    } else if (x < 0 && direction_ != TankDirection::LEFT) {
+        set_direction(TankDirection::LEFT);
+    } else if (x > 0 && direction_ != TankDirection::RIGHT) {
+        set_direction(TankDirection::RIGHT);
+    }
 
     x_pos += x;
     y_pos += y;
 
-    tank_sprite_->pushSprite(x_pos, y_pos);
     tft_.readRect(x_pos, y_pos, DEFAULT_TANK_WIDTH, DEFAULT_TANK_HEIGHT, background_buffer_);
 }
 
 void Tank::set_position(size_t x, size_t y) {
     x_pos = x;
     y_pos = y;
+}
+
+void Tank::set_direction(enum TankDirection direction) {
+    if (direction == direction_) {
+        return;
+    }
+
+    switch (direction) {
+        case TankDirection::UP:
+            tank_sprite_->pushImage(0, 0, DEFAULT_TANK_WIDTH, DEFAULT_TANK_HEIGHT, default_tank_up);
+            break;
+        case TankDirection::DOWN:
+            tank_sprite_->pushImage(0, 0, DEFAULT_TANK_WIDTH, DEFAULT_TANK_HEIGHT, default_tank_down);
+            break;
+        case TankDirection::LEFT:
+            tank_sprite_->pushImage(0, 0, DEFAULT_TANK_WIDTH, DEFAULT_TANK_HEIGHT, default_tank_left);  
+            break;
+        case TankDirection::RIGHT:
+            tank_sprite_->pushImage(0, 0, DEFAULT_TANK_WIDTH, DEFAULT_TANK_HEIGHT, default_tank_right); 
+            break;
+    }
+   
+    direction_ = direction;
 }
 
 size_t Tank::get_x_pos() const {

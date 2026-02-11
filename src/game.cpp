@@ -8,12 +8,13 @@ void game::start(void) {
   delay(1000);
   tft_.fillScreen(TFT_BLACK);
   
-  create_tank(0, Y_CENTER, 100, 5); // creating a tank in the center of the screen with 100 health and 5 ammunition
+  create_tank(X_CENTER, Y_CENTER, 100, 5); // creating a tank in the center of the screen with 100 health and 5 ammunition
 
   while (true) { //main loop
     
-    tanks_[0]->show(); // show the tank on the screen
+    
     tanks_[0]->move(5, 0); // move the tank to the right
+    tanks_[0]->show(); // show the tank on the screen
 
     delay(50);
   }

@@ -18,7 +18,7 @@ void setup(void) {
   tft.fillScreen(TFT_BLACK);
   //inMode(BTN_PIN, INPUT_PULLUP);
   
-  CountDown(tft);
+  //CountDown(tft);
   game TANKS(tft);
   TANKS.start();
 }

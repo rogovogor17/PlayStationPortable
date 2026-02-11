@@ -3,11 +3,21 @@
 
 #include <iostream>
 #include <TFT_eSPI.h> 
+#include "./Board_properties.hpp"
 #include "./Textures/default_tank.h"
+
+enum class TankDirection {
+    UP,
+    DOWN,
+    LEFT,
+    RIGHT,
+};
 
 class Tank {
     const size_t max_health_, max_ammunition_; 
     size_t health_, ammunition_; 
+
+    TankDirection direction_ = TankDirection::UP;
 
     size_t x_pos, y_pos; // position of the tank on the board
     TFT_eSPI& tft_;
@@ -23,8 +33,9 @@ class Tank {
             tank_sprite_ = new TFT_eSprite(&tft);
             tank_sprite_->createSprite(DEFAULT_TANK_WIDTH, DEFAULT_TANK_HEIGHT);
             tank_sprite_->setSwapBytes(true);
-            tank_sprite_->pushImage(0, 0, DEFAULT_TANK_WIDTH, DEFAULT_TANK_HEIGHT, default_tank);
-            tft.readRect(x_pos, y_pos, DEFAULT_TANK_WIDTH, DEFAULT_TANK_HEIGHT, background_buffer_); // storing buffer of the background pixels before drawing the tank
+            tank_sprite_->pushImage(0, 0, DEFAULT_TANK_WIDTH, DEFAULT_TANK_HEIGHT, default_tank_up);
+
+            tft.readRect(x_pos, y_pos, tank_sprite_->width(), tank_sprite_->height(), background_buffer_); // storing buffer of the background pixels before drawing the tank
         };
 
         ~Tank() {
@@ -32,9 +43,10 @@ class Tank {
         }
 
         void show(void);
-        void move(size_t x, size_t y);
+        void move(int x, int y);
 
         void set_position(size_t x, size_t y);
+        void set_direction(enum TankDirection direction);  
 
         size_t get_x_pos() const;
         size_t get_y_pos() const;
