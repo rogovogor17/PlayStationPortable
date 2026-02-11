@@ -1,7 +1,17 @@
 #include "../include/tank.hpp"
 
-void Tank::push_to_sprite(TFT_eSprite& screen_sprite) {
-    tank_sprite_->pushToSprite(&screen_sprite, x_pos, y_pos);
+void Tank::show(void) {
+    tank_sprite_->pushSprite(x_pos, y_pos);
+}
+
+void Tank::move(size_t x, size_t y) {
+    tft_.pushImage(x_pos, y_pos, DEFAULT_TANK_WIDTH, DEFAULT_TANK_HEIGHT, background_buffer_); // restoring the background pixels before moving the tank to a new position
+
+    x_pos += x;
+    y_pos += y;
+
+    tank_sprite_->pushSprite(x_pos, y_pos);
+    tft_.readRect(x_pos, y_pos, DEFAULT_TANK_WIDTH, DEFAULT_TANK_HEIGHT, background_buffer_);
 }
 
 void Tank::set_position(size_t x, size_t y) {
