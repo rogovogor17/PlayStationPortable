@@ -14,6 +14,7 @@ void game::start(void) {
 
   while (true) { //main loop
     
+    //tft_.pushImage(X_CENTER, Y_CENTER, 40, 40, default_tank_new_up); // redraw the background to erase the previous position of the tank
     check_updates_buttons();
     execute_updates();
 
@@ -32,7 +33,7 @@ void game::check_updates_buttons(void) {
 
 void game::execute_updates() {
   if (tanks_.size() == 0) return; // if there are no tanks, do nothing
-   
+
   if (buttons_[BTN_UP].status_) {
     tanks_[0]->move(0, -tanks_[0]->get_speed()); // move the tank up
   }
