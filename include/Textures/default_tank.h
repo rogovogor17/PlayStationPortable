@@ -4,8 +4,9 @@
 #include <stdint.h>
 #include <TFT_eSPI.h>
 
-#define DEFAULT_TANK_WIDTH 21
-#define DEFAULT_TANK_HEIGHT 21
+constexpr size_t DEFAULT_TANK_SPEED = 5;
+constexpr size_t DEFAULT_TANK_WIDTH = 21;
+constexpr size_t DEFAULT_TANK_HEIGHT = 21;
 
 
 const uint16_t default_tank_right[]  PROGMEM={

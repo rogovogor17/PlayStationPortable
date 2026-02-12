@@ -5,9 +5,12 @@ void Tank::show(void) {
 }
 
 void Tank::move(int x, int y) {
+    //printing to the screen background being strored in background_buffer_
     tft_.pushImage(x_pos, y_pos, DEFAULT_TANK_WIDTH, DEFAULT_TANK_HEIGHT, background_buffer_); // restoring the background pixels before moving the tank to a new position
 
     if (x && y) return; // disallow diagonal movement
+
+    //ensuring corresponding orientation os tank's sprite
     if (y > 0 && direction_ != TankDirection::DOWN) {
         set_direction(TankDirection::DOWN);
     } else if (y < 0 && direction_ != TankDirection::UP) {
@@ -18,9 +21,11 @@ void Tank::move(int x, int y) {
         set_direction(TankDirection::RIGHT);
     }
 
+    //movement
     x_pos += x;
     y_pos += y;
 
+    //storing background to background_buffer_
     tft_.readRect(x_pos, y_pos, DEFAULT_TANK_WIDTH, DEFAULT_TANK_HEIGHT, background_buffer_);
 }
 
@@ -58,6 +63,10 @@ size_t Tank::get_x_pos() const {
 
 size_t Tank::get_y_pos() const {
     return y_pos;
+}
+
+size_t Tank::get_speed() const {
+    return speed_;
 }
 
 size_t Tank::get_health() const {

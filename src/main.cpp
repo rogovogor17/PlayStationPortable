@@ -10,13 +10,14 @@ void setup(void) {
   tft.fillScreen(TFT_BLACK); // sets screen Black
   tft.setTextColor(TFT_WHITE);
   tft.setRotation(1);            // Album orientation
-  Serial.begin(115200); // setting velocity of communication with pins
   tft.setSwapBytes(true);
-
   tft.drawString("World of Tanks", X_CENTER-70, Y_CENTER, 4); //Print string in the center
-  delay(2000); // delay for 2 seconds to show the name of the game
+  delay(1000); // delay for 2 seconds to show the name of the game
   tft.fillScreen(TFT_BLACK);
-  //inMode(BTN_PIN, INPUT_PULLUP);
+
+  Serial.begin(115200); // setting velocity of communication with pins
+  //pinMode(BTN_UP_PIN, INPUT_PULLUP);
+
   
   //CountDown(tft);
   game TANKS(tft);

@@ -16,17 +16,19 @@ enum class TankDirection {
 class Tank {
     const size_t max_health_, max_ammunition_; 
     size_t health_, ammunition_; 
+    size_t x_pos, y_pos; // position of the tank on the board
+    size_t speed_;
 
     TankDirection direction_ = TankDirection::UP;
 
-    size_t x_pos, y_pos; // position of the tank on the board
     TFT_eSPI& tft_;
     TFT_eSprite* tank_sprite_;
     uint16_t background_buffer_[DEFAULT_TANK_WIDTH * DEFAULT_TANK_HEIGHT]; // buffer to store the background pixels before drawing the tank
 
     public:
-        Tank(size_t x_pos, size_t y_pos, size_t health, size_t ammunition, TFT_eSPI& tft) : //add try/catch module
+        Tank(size_t x_pos, size_t y_pos, size_t health, size_t ammunition, size_t speed, TFT_eSPI& tft) : //add try/catch module
         tft_(tft),
+        speed_(speed),
         x_pos(x_pos),                y_pos(y_pos),
         max_health_(health),         health_(health),
         max_ammunition_(ammunition), ammunition_(ammunition) { 
@@ -51,6 +53,7 @@ class Tank {
         size_t get_x_pos() const;
         size_t get_y_pos() const;
 
+        size_t get_speed() const;
         size_t get_health() const;
         size_t get_ammunition() const;
         size_t get_max_health() const;
