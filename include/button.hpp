@@ -18,22 +18,21 @@ enum ButtonID {
   BTN_COUNT  // Number of buttons
 };
 
-constexpr int BTN_UP_PIN    = 00;  //random pin number, can be changed
-constexpr int BTN_DOWN_PIN  = 12; 
-constexpr int BTN_RIGHT_PIN = 00;  //random pin number, can be changed
-constexpr int BTN_LEFT_PIN  = 00;  //random pin number, can be changed
+constexpr int BTN_UP_PIN    = 26;  
+constexpr int BTN_DOWN_PIN  = 26; 
+constexpr int BTN_RIGHT_PIN = 26;  
+constexpr int BTN_LEFT_PIN  = 26; 
 
-constexpr int BTN_X_PIN     = 00;  //random pin number, can be changed
-constexpr int BTN_Y_PIN     = 00;  //random pin number, can be changed
-constexpr int BTN_A_PIN     = 00;  //random pin number, can be changed
-constexpr int BTN_B_PIN     = 00;  //random pin number, can be changed
+constexpr int BTN_X_PIN     = 26;  
+constexpr int BTN_Y_PIN     = 26;  
+constexpr int BTN_A_PIN     = 26;  
+constexpr int BTN_B_PIN     = 26;  
 
-constexpr int BTN_PAUSA_PIN = 00;  //random pin number, can be changed
+constexpr int BTN_PAUSA_PIN = 26;  
 
 class Button final {
     size_t pin_;
     
-
     public:
         int status_;
         
