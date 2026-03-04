@@ -3,43 +3,68 @@
 
 #include <TFT_eSPI.h>
 
+enum Direction {
+  DIR_UP   ,
+  DIR_DOWN ,
+  DIR_LEFT , 
+  DIR_RIGHT,
+};
+
+constexpr uint16_t TRANSPARENT_COLOR = 0x0000;
+
 class Drawable {
   protected:
-
-    int x, y;
+    int pos_x, pos_y, old_x, old_y;
+    std::unique_ptr<uint16_t[]> background_buffer = nullptr;  // buffer to store the background pixels before drawing the tank
     int width, height;
     
     bool active;        // активен ли объект (true - рисовать/обновлять)
     bool visible;       // видим ли объект
+
+    int orientation; // start from up and increases by turning to the left in degrees
     
   public:
     Drawable(int startX = 0, int startY = 0, int w = 10, int h = 10) : 
-        x(startX), 
-        y(startY), 
-        width(w), 
-        height(h), 
-        active(true), 
-        visible(true) {}
+      pos_x(startX), 
+      pos_y(startY), 
+      old_x(startX), 
+      old_y(startY),
+      width(w), 
+      height(h), 
+      active(true), 
+      visible(true),
+      orientation(0) {}
 
     virtual ~Drawable() {}
     
     //inheritor have to realize this functions 
-    virtual void draw(TFT_eSPI &tft) = 0;
-    virtual void update() = 0;
+    //virtual void update() = 0;
+    virtual void draw()   = 0;
+
+    void restore_background(TFT_eSPI& tft) {
+      tft.pushImage(old_x, old_y, width, height, background_buffer.get());
+    }
+
+    void save_background(TFT_eSPI& tft) {
+      tft.readRect(pos_x, pos_y, width, height, background_buffer.get());
+    }
     
-    int getX() { return x; }
-    int getY() { return y; }
+    int getX() { return pos_x; }
+    int getY() { return pos_y; }
     int getWidth() { return width; }
     int getHeight() { return height; }
     
     void setPosition(int newX, int newY) {
-      x = newX;
-      y = newY;
+      pos_x = newX;
+      pos_y = newY;
     }
     
     void move(int dx, int dy) {
-      x += dx;
-      y += dy;
+      //onBeforeMove();
+      pos_x += dx;
+      pos_y += dy;
+
+      //onAfterMove();
     }
     
     bool isActive() { return active; }
@@ -50,16 +75,16 @@ class Drawable {
     
     // Проверка столкновения с другим объектом
     bool collidesWith(Drawable* other) {
-      return (x < other->x + other->width &&
-        x + width > other->x &&
-        y < other->y + other->height &&
-        y + height > other->y);
+      return (pos_x < other->pos_x + other->width &&
+        pos_x + width > other->pos_x &&
+        pos_y < other->pos_y + other->height &&
+        pos_y + height > other->pos_y);
     }
     
     // Проверка, находится ли точка внутри объекта
     bool containsPoint(int px, int py) {
-      return (px >= x && px <= x + width &&
-        py >= y && py <= y + height);
+      return (px >= pos_x && px <= pos_x + width &&
+        py >= pos_y && py <= pos_y + height);
     }
 };
 

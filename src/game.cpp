@@ -32,26 +32,29 @@ void game::check_updates_buttons(void) {
 void game::execute_updates() {
   if (tanks_.size() == 0) return; // if there are no tanks, do nothing
 
-  if (buttons_[BTN_UP].status_) {
-    tanks_[0]->move(0, -tanks_[0]->get_speed()); // move the tank up
-  }
-  if (buttons_[BTN_DOWN].status_) {
-    tanks_[0]->move(0, tanks_[0]->get_speed()); // move the tank down
-  }
-  if (buttons_[BTN_LEFT].status_) {
-    tanks_[0]->move(-tanks_[0]->get_speed(), 0); // move the tank left
-  }
-  if (buttons_[BTN_RIGHT].status_) {
-    tanks_[0]->move(tanks_[0]->get_speed(), 0); // move the tank right
+  int dx = 0, dy = 0;
+  int speed = tanks_[0]->get_speed();
+
+  if (buttons_[BTN_UP].status_)    dy = -speed;
+  else if (buttons_[BTN_DOWN].status_)  dy = speed;
+  else if (buttons_[BTN_LEFT].status_)  dx = -speed;
+  else if (buttons_[BTN_RIGHT].status_) dx = speed;
+
+  if (dx != 0 || dy != 0) {
+    tanks_[0]->move(dx, dy);
   }
 
-  tanks_[0]->show();
+  tanks_[0]->update_orientation(dx, dy);    
+
+  tanks_[0]->draw();
 }
 
 void game::create_tank(size_t x_pos, size_t y_pos, size_t health, size_t ammunition, size_t speed) {
-  auto tank = std::make_unique<Tank>(x_pos, y_pos, health, ammunition, speed,  tft_);
-  //tft_.readRect(x_pos, y_pos, tank_sprite_->width(), tank_sprite_->height(), background_buffer_); // storing buffer of the background pixels before drawing the tank
-  tanks_.push_back(std::move(tank)); 
+  auto tank = std::make_unique<Tank_d>(x_pos, y_pos, health, ammunition, speed,  tft_);
+  if (tank->is_valid()) {
+    tank->draw(); 
+    tanks_.push_back(std::move(tank)); 
+  }
 }
 
 void game::delete_tank(size_t index) {

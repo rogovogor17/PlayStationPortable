@@ -6,7 +6,7 @@
 #include <vector>
 #include <memory>
 #include "Board_properties.hpp"
-#include "tank.hpp"
+#include "tank_drawable.hpp"
 #include "button.hpp"
 
 const size_t COUNT_DOWN = 5;
@@ -14,7 +14,7 @@ const size_t COUNT_DOWN = 5;
 class game final {
     TFT_eSPI& tft_;
 
-    std::vector<std::unique_ptr<Tank>> tanks_;
+    std::vector<std::unique_ptr<Tank_d>> tanks_;
     Button buttons_[BTN_COUNT];
 
     public:
