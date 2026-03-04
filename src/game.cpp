@@ -10,8 +10,6 @@ void game::start(void) {
   
   create_tank(X_CENTER, Y_CENTER, 100, 5, 5); // creating a tank in the center of the screen with 100 health and 5 ammunition
 
-  
-
   while (true) { //main loop
     
     //tft_.pushImage(X_CENTER, Y_CENTER, 40, 40, default_tank_new_up); // redraw the background to erase the previous position of the tank
@@ -52,6 +50,7 @@ void game::execute_updates() {
 
 void game::create_tank(size_t x_pos, size_t y_pos, size_t health, size_t ammunition, size_t speed) {
   auto tank = std::make_unique<Tank>(x_pos, y_pos, health, ammunition, speed,  tft_);
+  //tft_.readRect(x_pos, y_pos, tank_sprite_->width(), tank_sprite_->height(), background_buffer_); // storing buffer of the background pixels before drawing the tank
   tanks_.push_back(std::move(tank)); 
 }
 
@@ -71,7 +70,7 @@ void CountDown(TFT_eSPI& tft) {
     while (count_down > 0) {
     tft.drawString(String(count_down), X_CENTER, Y_CENTER + 20, 7);
     delay(1000);
-     tft.fillScreen(TFT_BLACK); 
+    tft.fillScreen(TFT_BLACK); 
     count_down--;
   }
 }

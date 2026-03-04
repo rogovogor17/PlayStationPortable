@@ -18,17 +18,17 @@ enum ButtonID {
   BTN_COUNT  // Number of buttons
 };
 
-constexpr int BTN_UP_PIN    = 26;  
-constexpr int BTN_DOWN_PIN  = 26; 
-constexpr int BTN_RIGHT_PIN = 26;  
-constexpr int BTN_LEFT_PIN  = 26; 
+constexpr int BTN_UP_PIN    = 17;  //35
+constexpr int BTN_DOWN_PIN  = 32; 
+constexpr int BTN_RIGHT_PIN = 19;  //34 
+constexpr int BTN_LEFT_PIN  = 33; 
 
 constexpr int BTN_X_PIN     = 26;  
-constexpr int BTN_Y_PIN     = 26;  
-constexpr int BTN_A_PIN     = 26;  
-constexpr int BTN_B_PIN     = 26;  
+constexpr int BTN_Y_PIN     = 27;  
+constexpr int BTN_A_PIN     = 12;  
+constexpr int BTN_B_PIN     = 14;  
 
-constexpr int BTN_PAUSA_PIN = 26;  
+constexpr int BTN_PAUSA_PIN = 25;  
 
 class Button final {
     size_t pin_;

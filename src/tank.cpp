@@ -6,9 +6,9 @@ void Tank::show(void) {
 
 void Tank::move(int x, int y) {
     //printing to the screen background being strored in background_buffer_
-    tft_.pushImage(x_pos, y_pos, DEFAULT_TANK_WIDTH, DEFAULT_TANK_HEIGHT, background_buffer_); // restoring the background pixels before moving the tank to a new position
-
     if (x && y) return; // disallow diagonal movement
+
+    tft_.fillRect(x_pos, y_pos, DEFAULT_TANK_WIDTH, DEFAULT_TANK_HEIGHT, TFT_BLACK);
 
     //ensuring corresponding orientation os tank's sprite
     if (y > 0 && direction_ != TankDirection::DOWN) {

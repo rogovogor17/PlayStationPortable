@@ -23,7 +23,7 @@ class Tank {
 
     TFT_eSPI& tft_;
     TFT_eSprite* tank_sprite_;
-    uint16_t background_buffer_[DEFAULT_TANK_WIDTH * DEFAULT_TANK_HEIGHT]; // buffer to store the background pixels before drawing the tank
+    uint16_t background_buffer_[DEFAULT_TANK_WIDTH * DEFAULT_TANK_HEIGHT] = {0}; // buffer to store the background pixels before drawing the tank
 
     public:
         Tank(size_t x_pos, size_t y_pos, size_t health, size_t ammunition, size_t speed, TFT_eSPI& tft) : //add try/catch module

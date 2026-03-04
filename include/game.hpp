@@ -18,7 +18,7 @@ class game final {
     Button buttons_[BTN_COUNT];
 
     public:
-        game(TFT_eSPI& tft) : tft_(tft), 
+        game(TFT_eSPI& tft) : tft_(tft),
         buttons_{
             Button(BTN_UP_PIN),     // BTN_UP
             Button(BTN_DOWN_PIN),   // BTN_DOWN
