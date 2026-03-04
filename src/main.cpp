@@ -18,20 +18,9 @@ void setup(void) {
   tft.fillScreen(TFT_BLACK);
 
   Serial.begin(115200); // setting velocity of communication with pins
-  // pinMode(BTN_UP_PIN, INPUT_PULLUP);
-  // pinMode(BTN_DOWN_PIN, INPUT_PULLUP);
-  // pinMode(BTN_RIGHT_PIN, INPUT_PULLUP);
-  // pinMode(BTN_LEFT_PIN, INPUT_PULLUP);
-
-  // pinMode(BTN_X_PIN, INPUT_PULLUP);
-  // pinMode(BTN_Y_PIN, INPUT_PULLUP);
-  // pinMode(BTN_A_PIN, INPUT_PULLUP);
-  // pinMode(BTN_B_PIN, INPUT_PULLUP);
-
-  // pinMode(BTN_PAUSA_PIN, INPUT_PULLUP);
   
   //CountDown(tft);
-  game TANKS(tft);
+  Game TANKS(tft);
   TANKS.start();
 }
 

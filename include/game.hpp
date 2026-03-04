@@ -6,19 +6,20 @@
 #include <vector>
 #include <memory>
 #include "Board_properties.hpp"
-#include "tank_drawable.hpp"
-#include "button.hpp"
+#include "Tank.hpp"
+#include "Button.hpp"
 
 const size_t COUNT_DOWN = 5;
 
-class game final {
+class Game final {
     TFT_eSPI& tft_;
 
-    std::vector<std::unique_ptr<Tank_d>> tanks_;
+    std::vector<std::unique_ptr<Tank>> tanks_;
+    std::vector<std::unique_ptr<Bullet>> bullets_;
     Button buttons_[BTN_COUNT];
 
     public:
-        game(TFT_eSPI& tft) : tft_(tft),
+        Game(TFT_eSPI& tft) : tft_(tft),
         buttons_{
             Button(BTN_UP_PIN),     // BTN_UP
             Button(BTN_DOWN_PIN),   // BTN_DOWN
@@ -33,16 +34,20 @@ class game final {
 
         void start(void);
 
-        void check_updates_buttons(void); // function to update the status of buttons, can be used in the main loop to check for button presses
+        // function to update the status of buttons, can be used in the main loop to check for button presses
+        void check_updates_buttons(void); 
         void execute_updates();
+        bool process_collisions(int dx, int dy);
 
         void create_tank(size_t x_pos, size_t y_pos, size_t health, size_t ammunition, size_t speed); 
         void delete_tank(size_t index);
         void delete_enemy_tanks(void); 
 
-        game& operator=(game& other) = delete; // delete copy assignment operator
-        game(game& other)  = delete; // delete copy constructor
-        game(game&& other) = delete; // delete move constructor
+        void create_flying_bullet();
+
+        Game& operator=(Game& other) = delete; // delete copy assignment operator
+        Game(Game& other)  = delete; // delete copy constructor
+        Game(Game&& other) = delete; // delete move constructor
 };
 
 void CountDown(TFT_eSPI& tft);

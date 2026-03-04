@@ -18,9 +18,9 @@ enum ButtonID {
   BTN_COUNT  // Number of buttons
 };
 
-constexpr int BTN_UP_PIN    = 17;  //35
+constexpr int BTN_UP_PIN    = 17;
 constexpr int BTN_DOWN_PIN  = 32; 
-constexpr int BTN_RIGHT_PIN = 21; //19 //34 
+constexpr int BTN_RIGHT_PIN = 21; 
 constexpr int BTN_LEFT_PIN  = 33; 
 
 constexpr int BTN_X_PIN     = 26;  

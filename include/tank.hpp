@@ -1,63 +1,73 @@
-#ifndef CLASS_TANK
-#define CLASS_TANK
+#ifndef CLASS_TANK_DRAW
+#define CLASS_TANK_DRAW
 
 #include <iostream>
 #include <TFT_eSPI.h> 
 #include "./Board_properties.hpp"
-#include "./Textures/default_tank.h"
+#include "./Textures/default_tank/default_tank.h"
+#include "Drawable.hpp"
+#include "Bullet.hpp"
 
-enum class TankDirection {
-    UP,
-    DOWN,
-    LEFT,
-    RIGHT,
-};
+class Tank : public Drawable {
+  const size_t max_health_, max_ammunition_; 
+  size_t health_, ammunition_, speed_; 
 
-class Tank {
-    const size_t max_health_, max_ammunition_; 
-    size_t health_, ammunition_; 
-    size_t x_pos, y_pos; // position of the tank on the board
-    size_t speed_;
+  bool is_valid_;
 
-    TankDirection direction_ = TankDirection::UP;
+  inline static const uint16_t* skins[4] = {
+    default_tank_up, 
+    default_tank_down, 
+    default_tank_left, 
+    default_tank_right 
+  };
 
-    TFT_eSPI& tft_;
-    TFT_eSprite* tank_sprite_;
-    uint16_t background_buffer_[DEFAULT_TANK_WIDTH * DEFAULT_TANK_HEIGHT] = {0}; // buffer to store the background pixels before drawing the tank
+  int tank_type; // Индекс скина для конкретного экземпляра
 
-    public:
-        Tank(size_t x_pos, size_t y_pos, size_t health, size_t ammunition, size_t speed, TFT_eSPI& tft) : //add try/catch module
-        tft_(tft),
-        speed_(speed),
-        x_pos(x_pos),                y_pos(y_pos),
-        max_health_(health),         health_(health),
-        max_ammunition_(ammunition), ammunition_(ammunition) { 
-            tank_sprite_ = new TFT_eSprite(&tft);
-            tank_sprite_->createSprite(DEFAULT_TANK_WIDTH, DEFAULT_TANK_HEIGHT);
-            tank_sprite_->setSwapBytes(true);
-            tank_sprite_->pushImage(0, 0, DEFAULT_TANK_WIDTH, DEFAULT_TANK_HEIGHT, default_tank_up);
+  TFT_eSPI& tft_;
+  //std::unique_ptr<TFT_eSprite> tank_sprite_;
 
-            tft.readRect(x_pos, y_pos, tank_sprite_->width(), tank_sprite_->height(), background_buffer_); // storing buffer of the background pixels before drawing the tank
-        };
+  public:
+    Tank(size_t x_pos, size_t y_pos, size_t health, size_t ammunition, size_t speed, TFT_eSPI& tft) : 
+    Drawable(x_pos, y_pos, DEFAULT_TANK_WIDTH, DEFAULT_TANK_HEIGHT),
+    tft_(tft), speed_(speed), max_health_(health), health_(health),
+    max_ammunition_(ammunition), ammunition_(ammunition), is_valid_(false) { 
+    //   if (ESP.getFreeHeap() < 5000) {
+    //     Serial.println("Недостаточно памяти для танка");
+    //     return;
+    //   }
 
-        ~Tank() {
-            delete tank_sprite_;
-        }
+      background_buffer = std::make_unique<uint16_t[]>(width*height);
+      if (!background_buffer) {
+        return;
+      }  
 
-        void show(void);
-        void move(int x, int y);
+      // storing buffer of the background pixels before drawing the tank  
+      tft.readRect(x_pos, y_pos, width, height, background_buffer.get()); 
 
-        void set_position(size_t x, size_t y);
-        void set_direction(enum TankDirection direction);  
+      is_valid_ = true;
+    };  
 
-        size_t get_x_pos() const;
-        size_t get_y_pos() const;
+    void draw() override;
+    bool is_valid() {return is_valid_;}  
 
-        size_t get_speed() const;
-        size_t get_health() const;
-        size_t get_ammunition() const;
-        size_t get_max_health() const;
-        size_t get_max_ammunition() const;
+    void update_orientation(int dx, int dy);
+
+    std::pair<int, int> count_nose_of_the_tank(int bullet_width, int bullet_length) {
+      switch(orientation) {
+        case DIR_UP:    return std::pair(pos_x + width/2 - bullet_width/2, pos_y - bullet_length);          break;
+        case DIR_DOWN:  return std::pair(pos_x + width/2 - bullet_width/2, pos_y + height); break;
+        case DIR_LEFT:  return std::pair(pos_x - bullet_length, pos_y + height/2 - bullet_width/2);         break;
+        case DIR_RIGHT: return std::pair(pos_x + width, pos_y + height/2 - bullet_width/2);         break;
+      }
+
+      return std::pair{0, 0};
+    }    
+
+    size_t get_speed()          const {return speed_;}
+    size_t get_health()         const {return health_;}
+    size_t get_max_health()     const {return max_health_;}
+    size_t get_ammunition()     const {return ammunition_;}
+    size_t get_max_ammunition() const {return max_ammunition_;}
 };
 
 #endif

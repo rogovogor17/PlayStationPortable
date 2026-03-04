@@ -38,25 +38,31 @@ class Drawable {
     virtual ~Drawable() {}
     
     //inheritor have to realize this functions 
-    //virtual void update() = 0;
     virtual void draw()   = 0;
 
     void restore_background(TFT_eSPI& tft) {
+      tft.setSwapBytes(false); 
       tft.pushImage(old_x, old_y, width, height, background_buffer.get());
     }
 
     void save_background(TFT_eSPI& tft) {
+      tft.setSwapBytes(false); 
       tft.readRect(pos_x, pos_y, width, height, background_buffer.get());
     }
     
-    int getX() { return pos_x; }
-    int getY() { return pos_y; }
-    int getWidth() { return width; }
+    int getX()      { return pos_x; }
+    int getY()      { return pos_y; }
+    int getWidth()  { return width; }
     int getHeight() { return height; }
+    int getOrientation() { return orientation; }
     
     void setPosition(int newX, int newY) {
       pos_x = newX;
       pos_y = newY;
+    }
+
+    void setOrientation(int newOrientation) {
+      orientation = newOrientation;
     }
     
     void move(int dx, int dy) {
@@ -74,11 +80,12 @@ class Drawable {
     void setVisible(bool state) { visible = state; }
     
     // Проверка столкновения с другим объектом
-    bool collidesWith(Drawable* other) {
-      return (pos_x < other->pos_x + other->width &&
-        pos_x + width > other->pos_x &&
-        pos_y < other->pos_y + other->height &&
-        pos_y + height > other->pos_y);
+    bool collidesWith(int dx, int dy, Drawable* other) {
+      return ((pos_x + dx + width  > other->pos_x  &&
+               pos_y + dy + height > other->pos_y) &&
+              (pos_x + dx < other->pos_x + other->width &&
+               pos_y + dy < other->pos_y + other->height)
+            );
     }
     
     // Проверка, находится ли точка внутри объекта
