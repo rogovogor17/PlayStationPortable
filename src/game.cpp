@@ -8,6 +8,8 @@ void Game::start(void) {
   delay(1000);
   tft_.fillScreen(TFT_BLACK);
   tft_.setSwapBytes(true);
+
+  draw_map(); 
   
   create_tank(X_CENTER, Y_CENTER, 100, 5, 5); // creating a tank in the center of the screen with 100 health and 5 ammunition
   create_tank(X_CENTER+100, Y_CENTER+50, 100, 5, 5); // creating a tank in the center of the screen with 100 health and 5 ammunition
@@ -98,6 +100,22 @@ void Game::create_flying_bullet() {
   auto it = tanks_[0]->count_nose_of_the_tank(default_bullet_width, default_bullet_length);
   auto bullet = std::make_unique<Bullet>(it.first, it.second, tanks_[0]->getOrientation(), default_bullet_speed, tft_);
   bullets_.push_back(std::move(bullet));
+}
+
+void Game::draw_map() {
+  for (int i = 0; i < MAP_HEIGHT; i++) {
+    for (int j = 0; j < MAP_WIDTH; j++) {
+      uint32_t color = 0;
+      switch(game_map[i][j]) {
+        case BLACK: break;
+        case GRASS: color = TFT_OLIVE; break;
+        case BRICKS_WALL: color =  TFT_BROWN; break;
+        case SPECIAL: color = TFT_MAGENTA; break;
+      }
+
+      tft_.drawRect(j*TILE_SIZE, i*TILE_SIZE, TILE_SIZE, TILE_SIZE, color);
+    }
+  }
 }
 
 void CountDown(TFT_eSPI& tft) {

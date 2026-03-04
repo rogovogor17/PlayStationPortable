@@ -8,6 +8,7 @@
 #include "Board_properties.hpp"
 #include "Tank.hpp"
 #include "Button.hpp"
+#include "Map.hpp"
 
 const size_t COUNT_DOWN = 5;
 
@@ -35,6 +36,8 @@ class Game final {
         void start(void);
 
         // function to update the status of buttons, can be used in the main loop to check for button presses
+        void draw_map();
+
         void check_updates_buttons(void); 
         void execute_updates();
         bool process_collisions(int dx, int dy);

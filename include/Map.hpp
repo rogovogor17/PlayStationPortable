@@ -13,7 +13,7 @@ enum TILE_TYPE {
     SPECIAL = 3,
 };
 
-uint8_t game_map[MAP_HEIGHT][MAP_WIDTH] = {
+constexpr uint8_t game_map[MAP_HEIGHT][MAP_WIDTH] = {
     // 0: BLACK, 1: GRASS, 2: BRICKS_WALL, 3: SPECIAL
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
