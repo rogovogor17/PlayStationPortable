@@ -3,6 +3,10 @@
 
 #include <TFT_eSPI.h>
 
+struct Rect { 
+  int x, y, w, h; 
+};
+
 enum Direction {
   DIR_UP   ,
   DIR_DOWN ,
@@ -10,9 +14,16 @@ enum Direction {
   DIR_RIGHT,
 };
 
-constexpr uint16_t TRANSPARENT_COLOR = 0x0000;
+enum class CollidableType {
+  TANK,
+  BULLET,
+  WALL, 
+  NONE
+};
 
-class Drawable {
+constexpr uint16_t TRANSPARENT_COLOR = 0xFFFF; // white light considers transparent
+
+class Entity {
   protected:
     int pos_x, pos_y, old_x, old_y;
     std::unique_ptr<uint16_t[]> background_buffer = nullptr;  // buffer to store the background pixels before drawing the tank
@@ -24,7 +35,7 @@ class Drawable {
     int orientation; // start from up and increases by turning to the left in degrees
     
   public:
-    Drawable(int startX = 0, int startY = 0, int w = 10, int h = 10) : 
+     Entity(int startX = 0, int startY = 0, int w = 10, int h = 10) : 
       pos_x(startX), 
       pos_y(startY), 
       old_x(startX), 
@@ -35,7 +46,7 @@ class Drawable {
       visible(true),
       orientation(0) {}
 
-    virtual ~Drawable() {}
+    virtual ~Entity() {}
     
     //inheritor have to realize this functions 
     virtual void draw()   = 0;
@@ -80,7 +91,7 @@ class Drawable {
     void setVisible(bool state) { visible = state; }
     
     // Проверка столкновения с другим объектом
-    bool collidesWith(int dx, int dy, Drawable* other) {
+    bool collidesWith(int dx, int dy,  Entity* other) {
       return ((pos_x + dx + width  > other->pos_x  &&
                pos_y + dy + height > other->pos_y) &&
               (pos_x + dx < other->pos_x + other->width &&
@@ -93,6 +104,16 @@ class Drawable {
       return (px >= pos_x && px <= pos_x + width &&
         py >= pos_y && py <= pos_y + height);
     }
+
+  
+  virtual Rect get_collision_rect() const = 0;
+  //describes what object will do if collids with anothe object
+  virtual void on_collision(Entity* other) = 0; 
+  //responsible for being accounted as a collidable object
+  virtual bool is_active() const = 0; 
+  virtual Entity* get_owner() const { return nullptr; }
+  virtual void update() = 0;
+  virtual CollidableType get_type() const = 0;
 };
 
 #endif

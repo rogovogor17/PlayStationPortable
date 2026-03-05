@@ -1,19 +1,19 @@
 #pragma once
 #include <vector>
 #include <algorithm>
-#include "Collidable.hpp"
+#include "Entity.hpp"
 
 class CollisionManager {
-    std::vector<Collidable*> objects_;
+    std::vector<Entity*> objects_;
     
 public:
-    void register_object(Collidable* obj) { objects_.push_back(obj); }
+    void register_object(Entity* obj) { objects_.push_back(obj); }
     void clear() { objects_.clear(); }
     
-    bool check_collisions(Collidable* mover, Rect future_rect) {
+    bool check_collisions(Entity* mover, Rect future_rect) {
         bool has_collision = false;
         for (auto* target : objects_) {
-            if (target == mover || !target->is_active()) continue;
+            if (target == mover || !target->is_active() || target->get_owner() == mover) continue;
 
             Rect r = target->get_collision_rect();
             // Проверка пересечения Rect

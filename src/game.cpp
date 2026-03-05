@@ -18,10 +18,12 @@ void Game::start(void) {
   while (true) { //main loop
     for (auto& tank : tanks_)   tank->update();
     for (auto& bullet : bullets_) bullet->update();
+    //draw_map(); 
     check_updates_buttons();
     execute_updates();
+    
 
-    delay(50);
+    delay(20);
   } 
 }
 
@@ -39,9 +41,9 @@ void Game::execute_updates() {
   int speed = tanks_[0]->get_speed();
 
   if (buttons_[BTN_UP].status_)         dy = -speed;
-  else if (buttons_[BTN_DOWN].status_)  dy = speed;
+  else if (buttons_[BTN_DOWN].status_)  dy =  speed;
   else if (buttons_[BTN_LEFT].status_)  dx = -speed;
-  else if (buttons_[BTN_RIGHT].status_) dx = speed;
+  else if (buttons_[BTN_RIGHT].status_) dx =  speed;
 
   if (dx != 0 || dy != 0) {
     Rect next_r = tanks_[0]->get_collision_rect();
@@ -54,15 +56,17 @@ void Game::execute_updates() {
     if (!is_out_of_bounds(next_r) && !collision_mgr_.check_collisions(tanks_[0].get(), next_r)) {
       tanks_[0]->move(dx, dy);
       tanks_[0]->update_orientation(dx, dy);
+      tanks_[0]->draw();
     }
-  
-    tanks_[0]->draw();
   }
    
   for (auto& bullet : bullets_) {
     if (bullet->is_exploding()) {
       bullet->draw(); // Рисуем кадр взрыва
-      if (bullet->animation_finished()) bullet->mark_dead();
+      if (bullet->animation_finished()) {
+        bullet->restore_background(tft_);
+        bullet->mark_dead();
+      }
       continue;
     }
 
@@ -140,7 +144,7 @@ void Game::delete_enemy_tanks(void) {
 
 void Game::create_flying_bullet() {
   auto it = tanks_[0]->count_nose_of_the_tank(default_bullet_width, default_bullet_length);
-  auto bullet = std::make_unique<Bullet>(it.first, it.second, tanks_[0]->getOrientation(), default_bullet_speed, tft_);
+  auto bullet = std::make_unique<Bullet>(it.first, it.second, tanks_[0].get(), default_bullet_speed, tft_);
   collision_mgr_.register_object(bullet.get());
   bullets_.push_back(std::move(bullet));
 }
@@ -163,19 +167,19 @@ void Game::draw_map() {
 
 void Game::cleanup_dead_objects() {
   bullets_.erase(
-      std::remove_if(bullets_.begin(), bullets_.end(), 
-          [](const std::unique_ptr<Bullet>& b) {
-              return b->is_dead();
-          }), 
-      bullets_.end()
+    std::remove_if(bullets_.begin(), bullets_.end(), 
+      [](const std::unique_ptr<Bullet>& b) {
+        return b->is_dead();
+      }), 
+    bullets_.end()
   );
 
   tanks_.erase(
-      std::remove_if(tanks_.begin(), tanks_.end(), 
-          [](const std::unique_ptr<Tank>& t) {
-              return t->is_dead();
-          }), 
-      tanks_.end()
+    std::remove_if(tanks_.begin(), tanks_.end(), 
+      [](const std::unique_ptr<Tank>& t) {
+        return t->is_dead();
+      }), 
+    tanks_.end()
   );
 }
 

@@ -1,6 +1,5 @@
 #include "./Textures/bullet/bullet.hpp"
-#include "Drawable.hpp"
-#include "Collidable.hpp"
+#include "Entity.hpp"
 
 constexpr size_t default_bullet_speed = 15;
 
@@ -10,18 +9,18 @@ enum class BulletState {
   Dead  
 };
 
-class Bullet: public Drawable, public Collidable {
-  size_t speed_;
-  int dx, dy;
+class Bullet: public Entity {
   TFT_eSPI& tft_;
 
+  size_t speed_;
+  int dx, dy;
   bool is_valid_;
   int skintype_ = 0;
 
+  Entity* owner_;
   //explosion
   int explosion_timer_ = 0;      
   const int EXPLOSION_DURATION = 10; //num of ticks
-  int num_of_frame_explosure = 0;
   BulletState state_;
   
 
@@ -34,9 +33,11 @@ class Bullet: public Drawable, public Collidable {
   };
 
   public:
-    Bullet(int x, int y, int orient, size_t speed, TFT_eSPI& tft): Drawable(x, y, default_bullet_length, default_bullet_width), 
+    Bullet(int x, int y, Entity* entity, size_t speed, TFT_eSPI& tft): 
+    Entity(x, y, default_bullet_length, default_bullet_width), 
     speed_(speed), is_valid_(false), tft_(tft), state_(BulletState::Active) {
-        setOrientation(orient);
+        owner_ = entity;
+        setOrientation(entity->getOrientation());
         switch(orientation) {
             case DIR_UP:    dx =      0, dy = -speed; break;
             case DIR_DOWN:  dx =      0, dy =  speed; break;
@@ -67,10 +68,11 @@ class Bullet: public Drawable, public Collidable {
       tft_.pushImage(pos_x, pos_y, width, height, current_sprite, TRANSPARENT_COLOR);
     }
 
-    bool animation_finished() const {return num_of_frame_explosure == EXPLOSION_DURATION;}
+    bool animation_finished() const {return explosion_timer_ >= EXPLOSION_DURATION;}
     void mark_dead() {state_ = BulletState::Dead;}
-    void mark_exploding() {skintype_ = 1; state_ = BulletState::Exploding;}
+    void mark_exploding() {skintype_ = 1; explosion_timer_ = 0; state_ = BulletState::Exploding;}
 
+    Entity* get_owner() const override { return owner_;}
     int get_dx() {return dx;}
     int get_dy() {return dy;}
 
@@ -78,7 +80,8 @@ class Bullet: public Drawable, public Collidable {
       return {pos_x, pos_y, width, height};
     }
 
-    void on_collision(Collidable* other) override {
+    void on_collision(Entity* other) override {
+      //if (other == owner) return;
       auto type = other->get_type();
       
       switch (type) {
@@ -95,13 +98,7 @@ class Bullet: public Drawable, public Collidable {
     void update() override {
       if (state_ == BulletState::Exploding) {
         explosion_timer_++;
-        
-        if (explosion_timer_ >= EXPLOSION_DURATION){ 
-          state_ = BulletState::Dead;
-        }
       }
-      
-      if (state_ ==  BulletState::Active) {}
     }
 
     CollidableType get_type() const override {
