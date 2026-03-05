@@ -24,7 +24,3 @@ constexpr uint8_t game_map[MAP_HEIGHT][MAP_WIDTH] = {
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
 };
-
-// // Текстуры (массивы uint16_t из ваших .h файлов)
-// extern const uint16_t tile_grass[]; 
-// extern const uint16_t tile_wall[];

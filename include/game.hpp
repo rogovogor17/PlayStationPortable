@@ -5,6 +5,7 @@
 #include <TFT_eSPI.h> 
 #include <vector>
 #include <memory>
+#include "CollisionManager.hpp"
 #include "Board_properties.hpp"
 #include "Tank.hpp"
 #include "Button.hpp"
@@ -15,9 +16,15 @@ const size_t COUNT_DOWN = 5;
 class Game final {
     TFT_eSPI& tft_;
 
+    CollisionManager collision_mgr_;
+
     std::vector<std::unique_ptr<Tank>> tanks_;
     std::vector<std::unique_ptr<Bullet>> bullets_;
+    //std::vector<std::shared_ptr<Wall>> walls_;
+    //std::vector<std::unique_ptr<>> walls_;    
     Button buttons_[BTN_COUNT];
+
+    bool is_running_ = false;
 
     public:
         Game(TFT_eSPI& tft) : tft_(tft),
@@ -38,15 +45,27 @@ class Game final {
         // function to update the status of buttons, can be used in the main loop to check for button presses
         void draw_map();
 
-        void check_updates_buttons(void); 
+        void check_updates_buttons(void); //input_manager
         void execute_updates();
+
+        void register_collidables(); 
+
         bool process_collisions(int dx, int dy);
 
         void create_tank(size_t x_pos, size_t y_pos, size_t health, size_t ammunition, size_t speed); 
         void delete_tank(size_t index);
         void delete_enemy_tanks(void); 
-
         void create_flying_bullet();
+        bool is_out_of_bounds (Rect next);
+        void cleanup_dead_objects();
+
+        // void render() {
+        //     renderer_.clear();
+        //     renderer_.draw_map(walls_);
+        //     renderer_.draw_tanks(tanks_);
+        //     renderer_.draw_bullets(bullets_);
+        //     renderer_.display();
+        // }
 
         Game& operator=(Game& other) = delete; // delete copy assignment operator
         Game(Game& other)  = delete; // delete copy constructor
