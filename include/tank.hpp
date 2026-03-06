@@ -22,14 +22,17 @@ class Tank : public Entity {
   bool active_ = true;
   TankState state_ = TankState::Active;
 
-  inline static const uint16_t* skins[4] = {
-    default_tank_up, 
+  inline static const uint16_t* skins[2][4] = {
+    {default_tank_up, 
     default_tank_down, 
     default_tank_left, 
-    default_tank_right 
+    default_tank_right}, 
+    {boom, boom, boom, boom}
   };
 
-  int tank_type; // Индекс скина для конкретного экземпляра
+  int explosion_timer_ = 0;
+  int EXPLOSION_DURATION = 10;
+  int tank_type = 0; // Индекс скина для конкретного экземпляра
 
   TFT_eSPI& tft_;
 
@@ -52,7 +55,7 @@ class Tank : public Entity {
 
     void draw() override;
     bool is_valid() {return is_valid_;}  
-    void update() override {} 
+    void update() override { explosion_timer_++;} 
 
     Entity* get_owner() const override { return nullptr; }
 
@@ -66,9 +69,7 @@ class Tank : public Entity {
       switch (type) {
         case CollidableType::BULLET:
           health_ -= 10;
-          if (health_ <= 0) {
-            active_ = false;
-          }
+          if (health_ <= 0) { mark_exploding();}
           break;
             
         case CollidableType::WALL:
@@ -85,6 +86,10 @@ class Tank : public Entity {
     CollidableType get_type() const override {
       return CollidableType::TANK;
     }
+
+    bool animation_finished() const {return explosion_timer_ >= EXPLOSION_DURATION;}
+    void mark_dead() {state_ = TankState::Dead;}
+    void mark_exploding() {tank_type = 1; explosion_timer_ = 0; state_ = TankState::Exploding;}
 
     bool is_active()    const override {return state_ == TankState::Active;}
     bool is_exploding() const {return state_ == TankState::Exploding;}

@@ -8,7 +8,7 @@ void Tank::draw() {
   old_y = pos_y;
   
   tft_.setSwapBytes(true); 
-  const uint16_t* current_sprite = skins[orientation];
+  const uint16_t* current_sprite = skins[tank_type][orientation];
   tft_.pushImage(pos_x, pos_y, width, height, current_sprite, TRANSPARENT_COLOR);
 }
 

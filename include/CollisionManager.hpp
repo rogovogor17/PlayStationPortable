@@ -16,11 +16,9 @@ public:
             if (target == mover || !target->is_active() || target->get_owner() == mover) continue;
 
             Rect r = target->get_collision_rect();
-            // Проверка пересечения Rect
             if (future_rect.x < r.x + r.w && future_rect.x + future_rect.w > r.x &&
                 future_rect.y < r.y + r.h && future_rect.y + future_rect.h > r.y) {
                 
-                // Уведомляем оба объекта!
                 mover->on_collision(target);
                 target->on_collision(mover);
                 has_collision = true;

@@ -17,7 +17,7 @@ void Game::start(void) {
   while (true) { //main loop
     for (auto& tank : tanks_)   tank->update();
     for (auto& bullet : bullets_) bullet->update();
-    //draw_map(); 
+
     check_updates_buttons();
     execute_updates();
     
@@ -61,7 +61,16 @@ void Game::execute_updates() {
       tanks_[0]->move(dx, dy);
       tanks_[0]->update_orientation(dx, dy);
       dirty_rects.push_back(tanks_[0]->get_collision_rect());
-      //tanks_[0]->draw();
+    }
+  }
+
+  for (auto& tank : tanks_) {
+    if (tank->is_exploding()) {
+      if (tank->animation_finished()) {
+        tank->mark_dead();
+      }
+      dirty_rects.push_back(tank->get_collision_rect());
+      continue;
     }
   }
    
@@ -83,12 +92,11 @@ void Game::execute_updates() {
       continue;
     }
 
-    if (collision_mgr_.check_collisions(bullet.get(), rect)) {
-    } else {
+    if (collision_mgr_.check_collisions(bullet.get(), rect)) {} 
+    else {
       dirty_rects.push_back(bullet->get_collision_rect());
       bullet->move(bullet->get_dx(), bullet->get_dy());
       dirty_rects.push_back(bullet->get_collision_rect());
-      //bullet->draw();
     }
   }
 
@@ -110,29 +118,6 @@ void Game::execute_updates() {
   collision_mgr_.cleanup();
 }
 
-bool Game::process_collisions(int dx, int dy) {
-  int next_x = tanks_[0]->getX() + dx;
-  int next_y = tanks_[0]->getY() + dy;
-
-  bool collision = false;
-
-  if (next_x < 0 || next_x + tanks_[0]->getWidth()  > X_MAX ||
-      next_y < 0 || next_y + tanks_[0]->getHeight() > Y_MAX) collision = true;
-
-  
-  // if (!collision && map.is_blocked(next_x, next_y, tank->get_width(), tank->get_height())) collision = true;
-
-  if (!collision) {
-    for (auto& other : tanks_) {
-      if (other == tanks_[0]) continue;
-        if (tanks_[0]->collidesWith(dx, dy, other.get())) {
-          collision = true;
-          break;
-        }
-    }
-  }
-  return collision;
-}
 
 void Game::register_collidables() {
   for (auto& tank: tanks_) {
