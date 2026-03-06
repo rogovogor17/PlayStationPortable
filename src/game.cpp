@@ -10,8 +10,7 @@ void Game::start(void) {
   tft_.setSwapBytes(true);
 
   draw_map(); 
-  
-  create_tank(X_CENTER, Y_CENTER, 100, 5, 5); // creating a tank in the center of the screen with 100 health and 5 ammunition
+  create_tank(X_CENTER+50, Y_CENTER +50, 100, 5, 5); // creating a tank in the center of the screen with 100 health and 5 ammunition
   create_tank(X_CENTER+100, Y_CENTER+50, 100, 5, 5); // creating a tank in the center of the screen with 100 health and 5 ammunition
   register_collidables(); 
 
@@ -23,7 +22,7 @@ void Game::start(void) {
     execute_updates();
     
 
-    delay(20);
+    delay(40);
   } 
 }
 
@@ -34,6 +33,10 @@ void Game::check_updates_buttons(void) {
 }
 
 void Game::execute_updates() {
+
+  std::vector<Rect> dirty_rects;
+  // for (auto& b : bullets_) dirty_rects.push_back(b->get_collision_rect());
+  // for (auto& t : tanks_)   dirty_rects.push_back(t->get_collision_rect());  
 
   if (buttons_[BTN_X].status_) create_flying_bullet();
 
@@ -54,19 +57,20 @@ void Game::execute_updates() {
                           next_r.y < 0 || next_r.y + next_r.h > Y_MAX);
 
     if (!is_out_of_bounds(next_r) && !collision_mgr_.check_collisions(tanks_[0].get(), next_r)) {
+      dirty_rects.push_back(tanks_[0]->get_collision_rect());
       tanks_[0]->move(dx, dy);
       tanks_[0]->update_orientation(dx, dy);
-      tanks_[0]->draw();
+      dirty_rects.push_back(tanks_[0]->get_collision_rect());
+      //tanks_[0]->draw();
     }
   }
    
   for (auto& bullet : bullets_) {
     if (bullet->is_exploding()) {
-      bullet->draw(); // Рисуем кадр взрыва
       if (bullet->animation_finished()) {
-        bullet->restore_background(tft_);
         bullet->mark_dead();
       }
+      dirty_rects.push_back(bullet->get_collision_rect());
       continue;
     }
 
@@ -81,9 +85,25 @@ void Game::execute_updates() {
 
     if (collision_mgr_.check_collisions(bullet.get(), rect)) {
     } else {
+      dirty_rects.push_back(bullet->get_collision_rect());
       bullet->move(bullet->get_dx(), bullet->get_dy());
-      bullet->draw();
+      dirty_rects.push_back(bullet->get_collision_rect());
+      //bullet->draw();
     }
+  }
+
+  // for (auto& b : bullets_) dirty_rects.push_back(b->get_collision_rect());
+  // for (auto& t : tanks_)   dirty_rects.push_back(t->get_collision_rect());
+
+  for (const auto& area : dirty_rects) {
+    draw_map_part(area);
+  }
+
+  for (auto& t : tanks_) {
+    if (!t->is_dead()) t->draw();
+  } 
+  for (auto& b : bullets_) {
+    if (!b->is_dead()) b->draw();
   }
 
   cleanup_dead_objects();
@@ -160,10 +180,37 @@ void Game::draw_map() {
         case SPECIAL: color = TFT_MAGENTA; break;
       }
 
-      tft_.drawRect(j*TILE_SIZE, i*TILE_SIZE, TILE_SIZE, TILE_SIZE, color);
+      tft_.fillRect(j*TILE_SIZE, i*TILE_SIZE, TILE_SIZE, TILE_SIZE, color);
     }
   }
 }
+
+void Game::draw_map_part(Rect r) {
+  int start_col = r.x / TILE_SIZE;
+  int end_col   = (r.x + r.w - 1) / TILE_SIZE;
+  int start_row = r.y / TILE_SIZE;
+  int end_row   = (r.y + r.h - 1) / TILE_SIZE;
+
+  start_col = std::max(0, start_col);
+  end_col   = std::min((int)MAP_WIDTH - 1, end_col);
+  start_row = std::max(0, start_row);
+  end_row   = std::min((int)MAP_HEIGHT - 1, end_row);
+
+  for (int i = start_row; i <= end_row; i++) {
+    for (int j = start_col; j <= end_col; j++) {
+      uint16_t color = TFT_BLACK;
+      switch(game_map[i][j]) {
+        case GRASS:       color = TFT_OLIVE;  break;
+        case BRICKS_WALL: color = TFT_BROWN;  break;
+        case SPECIAL:     color = TFT_MAGENTA;break;
+        default:          color = TFT_BLACK;  break;
+      }
+      
+      tft_.fillRect(j * TILE_SIZE, i * TILE_SIZE, TILE_SIZE, TILE_SIZE, color);
+    }
+  }
+}
+
 
 void Game::cleanup_dead_objects() {
   bullets_.erase(

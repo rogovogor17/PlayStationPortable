@@ -2,6 +2,7 @@
 #define DRAWABLE_H
 
 #include <TFT_eSPI.h>
+#include "Map.hpp"
 
 struct Rect { 
   int x, y, w, h; 
@@ -21,7 +22,7 @@ enum class CollidableType {
   NONE
 };
 
-constexpr uint16_t TRANSPARENT_COLOR = 0xFFFF; // white light considers transparent
+constexpr uint16_t TRANSPARENT_COLOR = 0x0000; // white light considers transparent
 
 class Entity {
   protected:
@@ -114,6 +115,17 @@ class Entity {
   virtual Entity* get_owner() const { return nullptr; }
   virtual void update() = 0;
   virtual CollidableType get_type() const = 0;
+};
+
+class MapWallEntity : public Entity {
+public:
+    MapWallEntity() : Entity(0, 0, TILE_SIZE, TILE_SIZE) {}
+    void draw() override {} // Стены рисует Game::draw_map_part
+    void update() override {}
+    bool is_active() const override { return true; }
+    CollidableType get_type() const override { return CollidableType::WALL; }
+    Rect get_collision_rect() const override { return {0,0,0,0}; } // Не используется
+    void on_collision(Entity* other) override {} 
 };
 
 #endif

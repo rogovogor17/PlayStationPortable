@@ -26,6 +26,13 @@ public:
                 has_collision = true;
             }
         }
+
+        if (check_map_collision(future_rect)) {
+            MapWallEntity tmp{};
+            mover->on_collision(&tmp);
+            has_collision = true;
+        }
+
         return has_collision;
     }
     
@@ -35,5 +42,25 @@ public:
                 [](const auto& obj) { return !obj->is_active(); }),
             objects_.end()
         );
+    }
+
+    bool check_map_collision(Rect rect) {
+        int start_col = rect.x / TILE_SIZE;
+        int end_col   = (rect.x + rect.w - 1) / TILE_SIZE;
+        int start_row = rect.y / TILE_SIZE;
+        int end_row   = (rect.y + rect.h - 1) / TILE_SIZE;
+
+        if (start_col < 0 || end_col >= MAP_WIDTH || start_row < 0 || end_row >= MAP_HEIGHT) {
+            return true; 
+        }
+
+        for (int i = start_row; i <= end_row; i++) {
+            for (int j = start_col; j <= end_col; j++) {
+                if (game_map[i][j] == BRICKS_WALL) {
+                    return true; 
+                }
+            }
+        }
+        return false;
     }
 };

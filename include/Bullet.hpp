@@ -46,19 +46,19 @@ class Bullet: public Entity {
             default: break;
         }
 
-        background_buffer = std::make_unique<uint16_t[]>(width*height);  
+        // background_buffer = std::make_unique<uint16_t[]>(width*height);  
 
-        if (!background_buffer) {
-            return;
-        }    
+        // if (!background_buffer) {
+        //     return;
+        // }    
         // storing buffer of the background pixels before drawing the tank  
-        tft.readRect(pos_x, pos_y, width, height, background_buffer.get());   
+        //tft.readRect(pos_x, pos_y, width, height, background_buffer.get());   
         is_valid_ = true;
     }
 
     void draw() override {
-      restore_background(tft_); // Using class drawable
-      save_background(tft_);    // Using class drawable  
+      //restore_background(tft_); // Using class drawable
+      //save_background(tft_);    // Using class drawable  
 
       old_x = pos_x;
       old_y = pos_y;

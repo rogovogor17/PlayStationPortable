@@ -40,12 +40,12 @@ class Tank : public Entity {
 
     max_ammunition_(ammunition), ammunition_(ammunition), is_valid_(false) { 
 
-      background_buffer = std::make_unique<uint16_t[]>(width*height);
-      if (!background_buffer) {
-        return;
-      }  
-      // storing buffer of the background pixels before drawing the tank  
-      tft.readRect(x_pos, y_pos, width, height, background_buffer.get()); 
+      // background_buffer = std::make_unique<uint16_t[]>(width*height);
+      // if (!background_buffer) {
+      //   return;
+      // }  
+      // // storing buffer of the background pixels before drawing the tank  
+      // tft.readRect(x_pos, y_pos, width, height, background_buffer.get()); 
 
       is_valid_ = true;
     };  

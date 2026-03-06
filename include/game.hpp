@@ -22,6 +22,9 @@ class Game final {
     std::vector<std::unique_ptr<Bullet>> bullets_;
     //std::vector<std::shared_ptr<Wall>> walls_;
     //std::vector<std::unique_ptr<>> walls_;    
+
+    std::unique_ptr<uint16_t[]> full_screen_buffer_;
+
     Button buttons_[BTN_COUNT];
 
     bool is_running_ = false;
@@ -44,6 +47,7 @@ class Game final {
 
         // function to update the status of buttons, can be used in the main loop to check for button presses
         void draw_map();
+        void draw_map_part(Rect r);
 
         void check_updates_buttons(void); //input_manager
         void execute_updates();
@@ -70,6 +74,14 @@ class Game final {
         Game& operator=(Game& other) = delete; // delete copy assignment operator
         Game(Game& other)  = delete; // delete copy constructor
         Game(Game&& other) = delete; // delete move constructor
+
+        void save_full_background() {
+        tft_.readRect(0, 0, X_MAX, Y_MAX, full_screen_buffer_.get());
+        }
+        
+        void restore_full_background() {
+            tft_.pushImage(0, 0, X_MAX, Y_MAX, full_screen_buffer_.get());
+        }
 };
 
 void CountDown(TFT_eSPI& tft);

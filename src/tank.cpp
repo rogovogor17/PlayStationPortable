@@ -1,8 +1,8 @@
 #include "Tank.hpp"
 
 void Tank::draw() {
-  restore_background(tft_); // Используем обертку родителя
-  save_background(tft_);    // Используем обертку родителя
+  // restore_background(tft_); // Используем обертку родителя
+  // save_background(tft_);    // Используем обертку родителя
 
   old_x = pos_x;
   old_y = pos_y;
