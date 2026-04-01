@@ -78,11 +78,8 @@ class Entity {
     }
     
     void move(int dx, int dy) {
-      //onBeforeMove();
       pos_x += dx;
       pos_y += dy;
-
-      //onAfterMove();
     }
     
     bool isActive() { return active; }
@@ -106,13 +103,10 @@ class Entity {
         py >= pos_y && py <= pos_y + height);
     }
 
-  
+  virtual std::shared_ptr<Entity> get_owner() const { return std::shared_ptr<Entity>(); }
   virtual Rect get_collision_rect() const = 0;
-  //describes what object will do if collids with anothe object
-  virtual void on_collision(Entity* other) = 0; 
-  //responsible for being accounted as a collidable object
+  virtual void on_collision(std::shared_ptr<Entity> other) = 0; 
   virtual bool is_active() const = 0; 
-  virtual Entity* get_owner() const { return nullptr; }
   virtual void update() = 0;
   virtual CollidableType get_type() const = 0;
 };
@@ -125,7 +119,7 @@ public:
     bool is_active() const override { return true; }
     CollidableType get_type() const override { return CollidableType::WALL; }
     Rect get_collision_rect() const override { return {0,0,0,0}; } // Не используется
-    void on_collision(Entity* other) override {} 
+    void on_collision(std::shared_ptr<Entity> other) override {} 
 };
 
 #endif

@@ -17,7 +17,7 @@ class Bullet: public Entity {
   bool is_valid_;
   int skintype_ = 0;
 
-  Entity* owner_;
+  std::shared_ptr<Entity> owner_;
   //explosion
   int explosion_timer_ = 0;      
   const int EXPLOSION_DURATION = 10; //num of ticks
@@ -33,7 +33,7 @@ class Bullet: public Entity {
   };
 
   public:
-    Bullet(int x, int y, Entity* entity, size_t speed, TFT_eSPI& tft): 
+    Bullet(int x, int y, std::shared_ptr<Entity> entity, size_t speed, TFT_eSPI& tft): 
     Entity(x, y, default_bullet_length, default_bullet_width), 
     speed_(speed), is_valid_(false), tft_(tft), state_(BulletState::Active) {
         owner_ = entity;
@@ -72,7 +72,7 @@ class Bullet: public Entity {
     void mark_dead() {state_ = BulletState::Dead;}
     void mark_exploding() {skintype_ = 1; explosion_timer_ = 0; state_ = BulletState::Exploding;}
 
-    Entity* get_owner() const override { return owner_;}
+    std::shared_ptr<Entity> get_owner() const override { return owner_;}
     int get_dx() {return dx;}
     int get_dy() {return dy;}
 
@@ -80,7 +80,7 @@ class Bullet: public Entity {
       return {pos_x, pos_y, width, height};
     }
 
-    void on_collision(Entity* other) override {
+    void on_collision(std::shared_ptr<Entity> other) override {
       //if (other == owner) return;
       auto type = other->get_type();
       

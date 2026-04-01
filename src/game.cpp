@@ -10,8 +10,8 @@ void Game::start(void) {
   tft_.setSwapBytes(true);
 
   draw_map(); 
-  create_tank(X_CENTER+50, Y_CENTER +50, 100, 5, 5); // creating a tank in the center of the screen with 100 health and 5 ammunition
-  create_tank(X_CENTER+100, Y_CENTER+50, 100, 5, 5); // creating a tank in the center of the screen with 100 health and 5 ammunition
+  create_tank(X_CENTER+70, Y_CENTER +50, 100, 5, 5); // creating a tank in the center of the screen with 100 health and 5 ammunition
+  create_tank(X_CENTER+120, Y_CENTER+50, 100, 5, 5); // creating a tank in the center of the screen with 100 health and 5 ammunition
   register_collidables(); 
 
   while (true) { //main loop
@@ -20,7 +20,6 @@ void Game::start(void) {
 
     check_updates_buttons();
     execute_updates();
-    
 
     delay(40);
   } 
@@ -55,13 +54,13 @@ void Game::execute_updates() {
 
     bool out_of_bounds = (next_r.x < 0 || next_r.x + next_r.w > X_MAX ||
                           next_r.y < 0 || next_r.y + next_r.h > Y_MAX);
-
-    if (!is_out_of_bounds(next_r) && !collision_mgr_.check_collisions(tanks_[0].get(), next_r)) {
-      dirty_rects.push_back(tanks_[0]->get_collision_rect());
-      tanks_[0]->move(dx, dy);
-      tanks_[0]->update_orientation(dx, dy);
-      dirty_rects.push_back(tanks_[0]->get_collision_rect());
+    //update orientation even if it could not move in order to enable aiming
+    dirty_rects.push_back(tanks_[0]->get_collision_rect());
+    tanks_[0]->update_orientation(dx, dy);
+    if (!is_out_of_bounds(next_r) && !collision_mgr_.check_collisions(tanks_[0], next_r)) {
+      tanks_[0]->move(dx, dy); 
     }
+    dirty_rects.push_back(tanks_[0]->get_collision_rect());
   }
 
   for (auto& tank : tanks_) {
@@ -92,16 +91,15 @@ void Game::execute_updates() {
       continue;
     }
 
-    if (collision_mgr_.check_collisions(bullet.get(), rect)) {} 
+    if (collision_mgr_.check_collisions(bullet, rect)) {
+      //all necessary operations are done in collision manager
+    } 
     else {
       dirty_rects.push_back(bullet->get_collision_rect());
       bullet->move(bullet->get_dx(), bullet->get_dy());
       dirty_rects.push_back(bullet->get_collision_rect());
     }
   }
-
-  // for (auto& b : bullets_) dirty_rects.push_back(b->get_collision_rect());
-  // for (auto& t : tanks_)   dirty_rects.push_back(t->get_collision_rect());
 
   for (const auto& area : dirty_rects) {
     draw_map_part(area);
@@ -115,22 +113,21 @@ void Game::execute_updates() {
   }
 
   cleanup_dead_objects();
-  collision_mgr_.cleanup();
 }
 
 
 void Game::register_collidables() {
   for (auto& tank: tanks_) {
-    collision_mgr_.register_object(tank.get());
+    collision_mgr_.register_object(tank);
   }
   
   for (auto& bullet: bullets_) {
-    collision_mgr_.register_object(bullet.get());
+    collision_mgr_.register_object(bullet);
   }
 }
 
 void Game::create_tank(size_t x_pos, size_t y_pos, size_t health, size_t ammunition, size_t speed) {
-  auto tank = std::make_unique<Tank>(x_pos, y_pos, health, ammunition, speed,  tft_);
+  auto tank = std::make_shared<Tank>(x_pos, y_pos, health, ammunition, speed,  tft_);
   if (tank->is_valid()) {
     tank->draw(); 
     tanks_.push_back(std::move(tank)); 
@@ -143,14 +140,14 @@ void Game::delete_tank(size_t index) {
 
 void Game::delete_enemy_tanks(void) {
   if (tanks_.size() > 1) {
-      tanks_.erase(tanks_.begin() + 1, tanks_.end());
+    tanks_.erase(tanks_.begin() + 1, tanks_.end());
   }
 }
 
 void Game::create_flying_bullet() {
   auto it = tanks_[0]->count_nose_of_the_tank(default_bullet_width, default_bullet_length);
-  auto bullet = std::make_unique<Bullet>(it.first, it.second, tanks_[0].get(), default_bullet_speed, tft_);
-  collision_mgr_.register_object(bullet.get());
+  auto bullet = std::make_shared<Bullet>(it.first, it.second, tanks_[0], default_bullet_speed, tft_);
+  collision_mgr_.register_object(bullet);
   bullets_.push_back(std::move(bullet));
 }
 
@@ -198,18 +195,21 @@ void Game::draw_map_part(Rect r) {
 
 
 void Game::cleanup_dead_objects() {
+
+  collision_mgr_.cleanup();
+
   bullets_.erase(
     std::remove_if(bullets_.begin(), bullets_.end(), 
-      [](const std::unique_ptr<Bullet>& b) {
-        return b->is_dead();
+      [](const auto& b) {
+        return b->is_dead();  
       }), 
     bullets_.end()
   );
 
   tanks_.erase(
     std::remove_if(tanks_.begin(), tanks_.end(), 
-      [](const std::unique_ptr<Tank>& t) {
-        return t->is_dead();
+      [](const auto& t) {
+        return t->is_dead(); 
       }), 
     tanks_.end()
   );

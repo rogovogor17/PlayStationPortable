@@ -4,15 +4,16 @@
 #include "Entity.hpp"
 
 class CollisionManager {
-    std::vector<Entity*> objects_;
+    std::vector<std::weak_ptr<Entity>> objects_;
     
 public:
-    void register_object(Entity* obj) { objects_.push_back(obj); }
+    void register_object(std::shared_ptr<Entity> obj) { objects_.push_back(obj); }
     void clear() { objects_.clear(); }
     
-    bool check_collisions(Entity* mover, Rect future_rect) {
+    bool check_collisions(std::shared_ptr<Entity> mover, Rect future_rect) {
         bool has_collision = false;
-        for (auto* target : objects_) {
+        for (auto& weak_target : objects_) {
+            auto target = weak_target.lock();
             if (target == mover || !target->is_active() || target->get_owner() == mover) continue;
 
             Rect r = target->get_collision_rect();
@@ -26,8 +27,8 @@ public:
         }
 
         if (check_map_collision(future_rect)) {
-            MapWallEntity tmp{};
-            mover->on_collision(&tmp);
+            auto tmp = std::make_shared<MapWallEntity>();
+            mover->on_collision(tmp);
             has_collision = true;
         }
 
@@ -37,7 +38,10 @@ public:
     void cleanup() {
         objects_.erase(
             std::remove_if(objects_.begin(), objects_.end(),
-                [](const auto& obj) { return !obj->is_active(); }),
+                [](const auto& weak_obj) { 
+                    auto shared_obj = weak_obj.lock();
+                    return !shared_obj || !shared_obj->is_active();
+                }),
             objects_.end()
         );
     }

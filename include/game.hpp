@@ -18,10 +18,8 @@ class Game final {
 
     CollisionManager collision_mgr_;
 
-    std::vector<std::unique_ptr<Tank>> tanks_;
-    std::vector<std::unique_ptr<Bullet>> bullets_;
-    //std::vector<std::shared_ptr<Wall>> walls_;
-    //std::vector<std::unique_ptr<>> walls_;    
+    std::vector<std::shared_ptr<Tank>> tanks_;
+    std::vector<std::shared_ptr<Bullet>> bullets_;
 
     std::unique_ptr<uint16_t[]> full_screen_buffer_;
 
@@ -52,9 +50,7 @@ class Game final {
         void check_updates_buttons(void); //input_manager
         void execute_updates();
 
-        void register_collidables(); 
-
-        bool process_collisions(int dx, int dy);
+        void register_collidables();
 
         void create_tank(size_t x_pos, size_t y_pos, size_t health, size_t ammunition, size_t speed); 
         void delete_tank(size_t index);

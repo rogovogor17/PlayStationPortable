@@ -42,14 +42,6 @@ class Tank : public Entity {
     tft_(tft), speed_(speed), max_health_(health), health_(health),
 
     max_ammunition_(ammunition), ammunition_(ammunition), is_valid_(false) { 
-
-      // background_buffer = std::make_unique<uint16_t[]>(width*height);
-      // if (!background_buffer) {
-      //   return;
-      // }  
-      // // storing buffer of the background pixels before drawing the tank  
-      // tft.readRect(x_pos, y_pos, width, height, background_buffer.get()); 
-
       is_valid_ = true;
     };  
 
@@ -57,13 +49,13 @@ class Tank : public Entity {
     bool is_valid() {return is_valid_;}  
     void update() override { explosion_timer_++;} 
 
-    Entity* get_owner() const override { return nullptr; }
+    std::shared_ptr<Entity> get_owner() const override { return std::shared_ptr<Entity>(); }
 
     Rect get_collision_rect() const override {
       return {pos_x, pos_y, width, height};
     }
 
-    void on_collision(Entity* other) override {
+    void on_collision(std::shared_ptr<Entity> other) override {
       auto type = other->get_type();
       
       switch (type) {
