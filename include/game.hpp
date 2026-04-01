@@ -38,8 +38,14 @@ class Game final {
             Button(BTN_Y_PIN),      // BTN_Y
             Button(BTN_A_PIN),      // BTN_A
             Button(BTN_B_PIN),      // BTN_B
-            Button(BTN_PAUSA_PIN)   // BTN_PAUSA
-        } {};
+            Button(BTN_PAUSA_PIN)}   // BTN_PAUSA 
+        {
+            collision_mgr_.set_wall_destroyed_callback(
+                [&tft](int x, int y) {
+                    tft.fillRect(x, y, TILE_SIZE, TILE_SIZE, BLACK);
+                }
+            );
+        };
 
         void start(void);
 

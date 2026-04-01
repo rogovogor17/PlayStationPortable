@@ -5,10 +5,14 @@
 
 class CollisionManager {
     std::vector<std::weak_ptr<Entity>> objects_;
-    
+    std::function<void(int tileX, int tileY)> wall_destroyed_callback_;
 public:
     void register_object(std::shared_ptr<Entity> obj) { objects_.push_back(obj); }
     void clear() { objects_.clear(); }
+
+    void set_wall_destroyed_callback(std::function<void(int, int)> callback) {
+        wall_destroyed_callback_ = std::move(callback);
+    }
     
     bool check_collisions(std::shared_ptr<Entity> mover, Rect future_rect) {
         bool has_collision = false;
@@ -26,7 +30,7 @@ public:
             }
         }
 
-        if (check_map_collision(future_rect)) {
+        if (check_map_collision(future_rect, mover->get_type())) {
             auto tmp = std::make_shared<MapWallEntity>();
             mover->on_collision(tmp);
             has_collision = true;
@@ -46,7 +50,7 @@ public:
         );
     }
 
-    bool check_map_collision(Rect rect) {
+    bool check_map_collision(Rect rect, CollidableType type) {
         int start_col = rect.x / TILE_SIZE;
         int end_col   = (rect.x + rect.w - 1) / TILE_SIZE;
         int start_row = rect.y / TILE_SIZE;
@@ -59,6 +63,13 @@ public:
         for (int i = start_row; i <= end_row; i++) {
             for (int j = start_col; j <= end_col; j++) {
                 if (game_map[i][j] == BRICKS_WALL) {
+                    if (type == CollidableType::BULLET) {
+                        game_map[i][j] = BLACK;
+                        if (wall_destroyed_callback_) {
+                            wall_destroyed_callback_(j * TILE_SIZE, i * TILE_SIZE);
+                        }
+                    }
+                        
                     return true; 
                 }
             }

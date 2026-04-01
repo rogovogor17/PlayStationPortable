@@ -30,10 +30,15 @@ class Tank : public Entity {
     {boom, boom, boom, boom}
   };
 
-  int explosion_timer_ = 0;
-  int EXPLOSION_DURATION = 10;
   int tank_type = 0; // Индекс скина для конкретного экземпляра
 
+  int explosion_timer_ = 0;
+  int EXPLOSION_DURATION = 10;
+
+  unsigned long lastShotTime = 0;
+  unsigned long shootCooldownMs = 400;
+  int reloadCounter_ = 0;
+  
   TFT_eSPI& tft_;
 
   public:
@@ -47,7 +52,16 @@ class Tank : public Entity {
 
     void draw() override;
     bool is_valid() {return is_valid_;}  
-    void update() override { explosion_timer_++;} 
+    void update() override { 
+      explosion_timer_++; 
+      if (ammunition_ < max_ammunition_) {
+        reloadCounter_++;
+        if (reloadCounter_ >= 30) {  // каждые 5 тиков
+            reloadCounter_ = 0;
+            ammunition_++;
+        }
+      }
+    } 
 
     std::shared_ptr<Entity> get_owner() const override { return std::shared_ptr<Entity>(); }
 
@@ -77,6 +91,17 @@ class Tank : public Entity {
 
     CollidableType get_type() const override {
       return CollidableType::TANK;
+    }
+
+    bool canShoot() {
+      unsigned long tmp = millis();
+      if (tmp-lastShotTime >= shootCooldownMs && ammunition_ > 0) {
+        ammunition_--;
+        lastShotTime = tmp;
+        return true; 
+      }
+
+      return false;
     }
 
     bool animation_finished() const {return explosion_timer_ >= EXPLOSION_DURATION;}

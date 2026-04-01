@@ -10,8 +10,8 @@ void Game::start(void) {
   tft_.setSwapBytes(true);
 
   draw_map(); 
-  create_tank(X_CENTER+70, Y_CENTER +50, 100, 5, 5); // creating a tank in the center of the screen with 100 health and 5 ammunition
-  create_tank(X_CENTER+120, Y_CENTER+50, 100, 5, 5); // creating a tank in the center of the screen with 100 health and 5 ammunition
+  create_tank(X_CENTER-80, 2*Y_CENTER-40, 50, 5, 5); // creating a tank in the center of the screen with 50 health and 5 ammunition
+  create_tank(X_CENTER+80, 2*Y_CENTER-40, 50, 5, 5); // creating a tank in the center of the screen with 50 health and 5 ammunition
   register_collidables(); 
 
   while (true) { //main loop
@@ -33,16 +33,16 @@ void Game::check_updates_buttons(void) {
 
 void Game::execute_updates() {
 
-  std::vector<Rect> dirty_rects;
-  // for (auto& b : bullets_) dirty_rects.push_back(b->get_collision_rect());
-  // for (auto& t : tanks_)   dirty_rects.push_back(t->get_collision_rect());  
+  std::vector<Rect> dirty_rects;  
 
-  if (buttons_[BTN_X].status_) create_flying_bullet();
+  if (buttons_[BTN_X].status_) {
+    if (tanks_[0]->canShoot()) create_flying_bullet();
+  }
 
   int dx = 0, dy = 0;
   int speed = tanks_[0]->get_speed();
 
-  if (buttons_[BTN_UP].status_)         dy = -speed;
+  if      (buttons_[BTN_UP].status_)    dy = -speed;
   else if (buttons_[BTN_DOWN].status_)  dy =  speed;
   else if (buttons_[BTN_LEFT].status_)  dx = -speed;
   else if (buttons_[BTN_RIGHT].status_) dx =  speed;
@@ -57,6 +57,7 @@ void Game::execute_updates() {
     //update orientation even if it could not move in order to enable aiming
     dirty_rects.push_back(tanks_[0]->get_collision_rect());
     tanks_[0]->update_orientation(dx, dy);
+
     if (!is_out_of_bounds(next_r) && !collision_mgr_.check_collisions(tanks_[0], next_r)) {
       tanks_[0]->move(dx, dy); 
     }
