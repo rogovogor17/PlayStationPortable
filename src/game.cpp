@@ -14,14 +14,48 @@ void Game::start(void) {
   create_tank(X_CENTER+80, 2*Y_CENTER-40, 50, 5, 5); // creating a tank in the center of the screen with 50 health and 5 ammunition
   register_collidables(); 
 
+  bool was_paused = false;
   while (true) { //main loop
-    for (auto& tank : tanks_)   tank->update();
-    for (auto& bullet : bullets_) bullet->update();
-
+    
     check_updates_buttons();
-    execute_updates();
+  
+    if (buttons_[BTN_PAUSA].status_ && !was_paused) {
+        was_paused = true;
+        
+        if (status_ == GameStatus::IN_PROGRESS) {
+          status_ = GameStatus::ON_HOLD;
+          draw_pause_screen();
+        } else if (status_ == GameStatus::ON_HOLD) {
+          status_ = GameStatus::IN_PROGRESS;
+          draw_map();
+          print_tank_data_to_info_table(*tanks_[0], true);
+        }
+    } else if (!buttons_[BTN_PAUSA].status_) {
+      was_paused = false;  // Сбрасываем флаг, когда кнопка отпущена
+    }
 
-    delay(40);
+    switch(status_) {
+      case GameStatus::OVER: 
+        return;
+
+      case GameStatus::ON_HOLD: {  
+        delay(100);  // Небольшая задержка, чтобы не нагружать CPU
+        break;
+      }
+
+      case GameStatus::IN_PROGRESS: {
+        for (auto& tank : tanks_)   tank->update();
+        for (auto& bullet : bullets_) bullet->update();
+
+        execute_updates();
+        cleanup_dead_objects();
+
+        delay(40);
+      }
+
+      default: break;
+    }
+    
   } 
 }
 
@@ -113,7 +147,7 @@ void Game::execute_updates() {
     if (!b->is_dead()) b->draw();
   }
 
-  cleanup_dead_objects();
+  print_tank_data_to_info_table(*tanks_[0]);
 }
 
 
@@ -152,19 +186,115 @@ void Game::create_flying_bullet() {
   bullets_.push_back(std::move(bullet));
 }
 
+void Game::draw_pause_screen() {
+  tft_.fillRect(X_CENTER-10, Y_CENTER, TILE_SIZE/2, TILE_SIZE*4, TFT_WHITE);
+  tft_.fillRect(X_CENTER+10, Y_CENTER, TILE_SIZE/2, TILE_SIZE*4, TFT_WHITE);
+}
+
 void Game::draw_map() {
   for (int i = 0; i < MAP_HEIGHT; i++) {
     for (int j = 0; j < MAP_WIDTH; j++) {
       uint32_t color = 0;
       switch(game_map[i][j]) {
         case BLACK: break;
-        case GRASS: color = TFT_OLIVE; break;
-        case BRICKS_WALL: color =  TFT_BROWN; break;
-        case SPECIAL: color = TFT_MAGENTA; break;
+        case GRASS:       color = TFT_OLIVE;   break;
+        case BRICKS_WALL: color = TFT_BROWN;   break;
+        case SPECIAL:     color = TFT_MAGENTA; break;
+        case BEDROCK:     color = TFT_DARKGREY;    break;
       }
 
       tft_.fillRect(j*TILE_SIZE, i*TILE_SIZE, TILE_SIZE, TILE_SIZE, color);
     }
+  }
+
+  // Полурамочка в правом верхнем углу
+  int frame_x = (MAP_WIDTH - 4) * TILE_SIZE;
+  int frame_y = 0;
+  int frame_width = 4 * TILE_SIZE;
+  int frame_height = 7 * TILE_SIZE;  // Увеличиваем для 4 строк
+
+  // Внешняя рамка (объемный эффект)
+  tft_.drawRect(frame_x, frame_y, frame_width, frame_height, TFT_WHITE);
+  tft_.drawLine(frame_x + 1, frame_y + 1, frame_x + frame_width - 2, frame_y + 1, TFT_LIGHTGREY);
+  tft_.drawLine(frame_x + 1, frame_y + 1, frame_x + 1, frame_y + frame_height - 2, TFT_LIGHTGREY);
+  
+  // Внутренняя рамка
+  tft_.drawRect(frame_x + 2, frame_y + 2, frame_width - 4, frame_height - 4, TFT_LIGHTGREY);
+  
+  // Внутренняя область (черная)
+  tft_.fillRect(frame_x + 3, frame_y + 3, frame_width - 6, frame_height - 6, TFT_BLACK);
+  
+  // Устанавливаем цвет текста
+  tft_.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft_.setTextSize(1);
+  
+  tft_.drawString("IP 1", frame_x + 10, frame_y + 10, 2);
+  tft_.drawLine(frame_x + 5, frame_y + 25, frame_x + frame_width - 5, frame_y + 25, TFT_WHITE);
+  
+  // Подписи - все с одинаковым отступом
+  tft_.drawString("HP:",   frame_x + 10, frame_y + 38, 1);
+  tft_.drawString("AMMO:", frame_x + 10, frame_y + 58, 1);
+  tft_.drawString("X:",    frame_x + 10, frame_y + 78, 1);
+  tft_.drawString("Y:",    frame_x + 10, frame_y + 98, 1);
+}
+
+void Game::print_tank_data_to_info_table(const Tank& tank, bool force_update) {
+  // Статические переменные сохраняют значение между вызовами
+  static int last_health = -1;
+  static int last_ammo = -1;
+  static int last_x = -1;
+  static int last_y = -1;
+  
+  // Если force_update == true, сбрасываем все статические переменные
+  if (force_update) {
+    last_health = -1;
+    last_ammo = -1;
+    last_x = -1;
+    last_y = -1;
+  }
+  
+  int current_health = tank.get_health();
+  int current_ammo   = tank.get_ammunition();
+  Rect rect          = tank.get_collision_rect();
+  int current_x = rect.x;
+  int current_y = rect.y;
+  
+  int frame_x = (MAP_WIDTH - 4) * TILE_SIZE;
+  int frame_y = 0;
+  int value_x = frame_x + 40;
+  
+  // Обновляем HP (сравнение будет работать, т.к. last_health = -1)
+  if (current_health != last_health) {
+    last_health = current_health;
+    
+    tft_.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft_.setTextSize(1);
+    tft_.fillRect(value_x, frame_y + 38, 30, 16, TFT_BLACK);
+    tft_.drawString(String(current_health), value_x, frame_y + 38, 1);
+  }
+  
+  // Обновляем Ammo
+  if (current_ammo != last_ammo) {
+    last_ammo = current_ammo;
+    
+    tft_.fillRect(value_x, frame_y + 58, 30, 16, TFT_BLACK);
+    tft_.drawString(String(current_ammo), value_x, frame_y + 58, 1);
+  }
+  
+  // Обновляем X
+  if (current_x != last_x) {
+    last_x = current_x;
+    
+    tft_.fillRect(value_x, frame_y + 78, 30, 16, TFT_BLACK);
+    tft_.drawString(String(current_x), value_x, frame_y + 78, 1);
+  }
+  
+  // Обновляем Y
+  if (current_y != last_y) {
+    last_y = current_y;
+    
+    tft_.fillRect(value_x, frame_y + 98, 30, 16, TFT_BLACK);
+    tft_.drawString(String(current_y), value_x, frame_y + 98, 1);
   }
 }
 
@@ -191,7 +321,7 @@ void Game::draw_map_part(Rect r) {
       
       tft_.fillRect(j * TILE_SIZE, i * TILE_SIZE, TILE_SIZE, TILE_SIZE, color);
     }
-  }
+  }  
 }
 
 

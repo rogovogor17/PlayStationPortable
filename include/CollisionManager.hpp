@@ -62,15 +62,20 @@ public:
 
         for (int i = start_row; i <= end_row; i++) {
             for (int j = start_col; j <= end_col; j++) {
-                if (game_map[i][j] == BRICKS_WALL) {
-                    if (type == CollidableType::BULLET) {
-                        game_map[i][j] = BLACK;
-                        if (wall_destroyed_callback_) {
-                            wall_destroyed_callback_(j * TILE_SIZE, i * TILE_SIZE);
+                switch(game_map[i][j]) {
+                    case BRICKS_WALL: {
+                        if (type == CollidableType::BULLET) {
+                            game_map[i][j] = BLACK;
+                            if (wall_destroyed_callback_) {
+                                wall_destroyed_callback_(j * TILE_SIZE, i * TILE_SIZE);
+                            }
                         }
-                    }
                         
-                    return true; 
+                        return true; 
+                    }
+
+                    case BEDROCK: return true;
+                    case SPECIAL: return true;
                 }
             }
         }

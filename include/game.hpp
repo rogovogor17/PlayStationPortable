@@ -11,11 +11,17 @@
 #include "Button.hpp"
 #include "Map.hpp"
 
-const size_t COUNT_DOWN = 5;
+constexpr size_t COUNT_DOWN = 5;
+
+enum class GameStatus {
+    IN_PROGRESS,
+    ON_HOLD,
+    OVER,
+};
 
 class Game final {
     TFT_eSPI& tft_;
-
+    GameStatus status_ = GameStatus::IN_PROGRESS;
     CollisionManager collision_mgr_;
 
     std::vector<std::shared_ptr<Tank>> tanks_;
@@ -42,7 +48,7 @@ class Game final {
         {
             collision_mgr_.set_wall_destroyed_callback(
                 [&tft](int x, int y) {
-                    tft.fillRect(x, y, TILE_SIZE, TILE_SIZE, BLACK);
+                    tft.fillRect(x, y, TILE_SIZE, TILE_SIZE, TFT_BLACK);
                 }
             );
         };
@@ -52,6 +58,8 @@ class Game final {
         // function to update the status of buttons, can be used in the main loop to check for button presses
         void draw_map();
         void draw_map_part(Rect r);
+        void draw_pause_screen();
+        void print_tank_data_to_info_table(const Tank& tank, bool force_update = false);
 
         void check_updates_buttons(void); //input_manager
         void execute_updates();
@@ -65,20 +73,15 @@ class Game final {
         bool is_out_of_bounds (Rect next);
         void cleanup_dead_objects();
 
-        // void render() {
-        //     renderer_.clear();
-        //     renderer_.draw_map(walls_);
-        //     renderer_.draw_tanks(tanks_);
-        //     renderer_.draw_bullets(bullets_);
-        //     renderer_.display();
-        // }
+        GameStatus get_status() const noexcept {return status_;}
+        bool   is_in_progress() const noexcept {return status_ == GameStatus::IN_PROGRESS;}
 
         Game& operator=(Game& other) = delete; // delete copy assignment operator
         Game(Game& other)  = delete; // delete copy constructor
         Game(Game&& other) = delete; // delete move constructor
 
         void save_full_background() {
-        tft_.readRect(0, 0, X_MAX, Y_MAX, full_screen_buffer_.get());
+            tft_.readRect(0, 0, X_MAX, Y_MAX, full_screen_buffer_.get());
         }
         
         void restore_full_background() {
