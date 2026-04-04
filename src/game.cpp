@@ -206,13 +206,17 @@ void Game::draw_map() {
         case GRASS:       color = TFT_OLIVE;   break;
         case BRICKS_WALL: color = TFT_BROWN;   break;
         case SPECIAL:     color = TFT_MAGENTA; break;
-        case BEDROCK:     color = TFT_DARKGREY;    break;
+        case BEDROCK:     color = TFT_DARKGREY;break;
       }
 
       tft_.fillRect(j*TILE_SIZE, i*TILE_SIZE, TILE_SIZE, TILE_SIZE, color);
     }
   }
 
+  draw_info_table();
+}
+
+void Game::draw_info_table() {
   // Полурамочка в правом верхнем углу
   int frame_x = (MAP_WIDTH - 4) * TILE_SIZE;
   int frame_y = 0;
@@ -242,7 +246,6 @@ void Game::draw_map() {
   tft_.drawString("X:",    frame_x + 10, frame_y + 78, 1);
   tft_.drawString("Y:",    frame_x + 10, frame_y + 98, 1);
 }
-
 void draw_heart(TFT_eSPI& tft, int x, int y, int size = 10) {
   if (size == 10) {
     for (int row = 0; row < 10; row++) {
@@ -364,19 +367,36 @@ void Game::draw_map_part(Rect r) {
   start_row = std::max(0, start_row);
   end_row   = std::min((int)MAP_HEIGHT - 1, end_row);
 
+  // Определяем область info table
+  int info_x = (MAP_WIDTH - 4) * TILE_SIZE;
+  int info_y = 0;
+  int info_w = 4 * TILE_SIZE;
+  int info_h = 6 * TILE_SIZE;
+  
+  // Проверяем, пересекается ли перерисовываемая область с info table
+  bool intersects_info = (r.x < info_x + info_w && r.x + r.w > info_x &&
+                          r.y < info_y + info_h && r.y + r.h > info_y);
+  
   for (int i = start_row; i <= end_row; i++) {
     for (int j = start_col; j <= end_col; j++) {
       uint16_t color = TFT_BLACK;
       switch(game_map_[i][j]) {
-        case GRASS:       color = TFT_OLIVE;  break;
-        case BRICKS_WALL: color = TFT_BROWN;  break;
-        case SPECIAL:     color = TFT_MAGENTA;break;
-        default:          color = TFT_BLACK;  break;
+        case GRASS:       color = TFT_OLIVE;   break;
+        case BRICKS_WALL: color = TFT_BROWN;   break;
+        case SPECIAL:     color = TFT_MAGENTA; break;
+        case BEDROCK:     color = TFT_DARKGREY;break;
+        default:          color = TFT_BLACK;   break;
       }
       
       tft_.fillRect(j * TILE_SIZE, i * TILE_SIZE, TILE_SIZE, TILE_SIZE, color);
     }
-  }  
+  }
+  
+  // Если была затронута info table, перерисовываем её полностью
+  if (intersects_info && !tanks_.empty()) {
+    draw_info_table();
+    print_tank_data_to_info_table(*tanks_[0], true);
+  }
 }
 
 

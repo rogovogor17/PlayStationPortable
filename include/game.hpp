@@ -33,7 +33,7 @@ class Game final {
     Button buttons_[BTN_COUNT];
 
     bool is_running_ = true;
-    
+
     int last_health_ = -1;
     int last_ammo_ = -1;
     int last_x_ = -1;
@@ -73,6 +73,7 @@ class Game final {
         void draw_map();
         void draw_map_part(Rect r);
         void draw_pause_screen();
+        void draw_info_table();
         void print_tank_data_to_info_table(const Tank& tank, bool force_update = false);
 
         void check_updates_buttons(void); //input_manager
