@@ -15,7 +15,7 @@ void Game::start(void) {
   register_collidables(); 
 
   bool was_paused = false;
-  while (true) { //main loop
+  while (is_running_) { //main loop
     
     check_updates_buttons();
   
@@ -35,8 +35,10 @@ void Game::start(void) {
     }
 
     switch(status_) {
-      case GameStatus::OVER: 
-        return;
+      case GameStatus::OVER: { 
+        is_running_ = false;
+        break;
+      }
 
       case GameStatus::ON_HOLD: {  
         delay(100);  // Небольшая задержка, чтобы не нагружать CPU
@@ -57,6 +59,10 @@ void Game::start(void) {
     }
     
   } 
+
+  tft_.fillScreen(TFT_BLACK);
+  tft_.drawString("Game Over", X_CENTER-50, Y_CENTER, 4);
+  delay(2000);
 }
 
 void Game::check_updates_buttons(void) {
@@ -195,7 +201,7 @@ void Game::draw_map() {
   for (int i = 0; i < MAP_HEIGHT; i++) {
     for (int j = 0; j < MAP_WIDTH; j++) {
       uint32_t color = 0;
-      switch(game_map[i][j]) {
+      switch(game_map_[i][j]) {
         case BLACK: break;
         case GRASS:       color = TFT_OLIVE;   break;
         case BRICKS_WALL: color = TFT_BROWN;   break;
@@ -309,7 +315,7 @@ void Game::print_tank_data_to_info_table(const Tank& tank, bool force_update) {
   if (current_ammo != last_ammo) {
     last_ammo = current_ammo;
     
-    // Очищаем область для патронов (теперь на месте бывшей надписи AMMO)
+    // Очищаем область для патронов
     tft_.fillRect(frame_x + 10, frame_y + 58, 60, 16, TFT_BLACK);
     
     // Рисуем желтые прямоугольники (патроны)
@@ -336,7 +342,7 @@ void Game::print_tank_data_to_info_table(const Tank& tank, bool force_update) {
     }
   }
   
-  // Обновляем X (сдвигаем вниз, так как убрали надписи)
+  // Обновляем X 
   if (current_x != last_x) {
     last_x = current_x;
     
@@ -367,7 +373,7 @@ void Game::draw_map_part(Rect r) {
   for (int i = start_row; i <= end_row; i++) {
     for (int j = start_col; j <= end_col; j++) {
       uint16_t color = TFT_BLACK;
-      switch(game_map[i][j]) {
+      switch(game_map_[i][j]) {
         case GRASS:       color = TFT_OLIVE;  break;
         case BRICKS_WALL: color = TFT_BROWN;  break;
         case SPECIAL:     color = TFT_MAGENTA;break;

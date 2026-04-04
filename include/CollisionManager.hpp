@@ -4,14 +4,24 @@
 #include "Entity.hpp"
 
 class CollisionManager {
+    uint8_t (&game_map)[MAP_HEIGHT][MAP_WIDTH];
     std::vector<std::weak_ptr<Entity>> objects_;
     std::function<void(int tileX, int tileY)> wall_destroyed_callback_;
+    std::function<void(void)> base_destroyed_callback_;
 public:
+    CollisionManager(uint8_t (&map)[MAP_HEIGHT][MAP_WIDTH]) 
+        : game_map(map)
+    {}
+    
     void register_object(std::shared_ptr<Entity> obj) { objects_.push_back(obj); }
     void clear() { objects_.clear(); }
 
     void set_wall_destroyed_callback(std::function<void(int, int)> callback) {
         wall_destroyed_callback_ = std::move(callback);
+    }
+
+    void set_base_destroyed_callback(std::function<void()> callback) {
+        base_destroyed_callback_ = std::move(callback);
     }
     
     bool check_collisions(std::shared_ptr<Entity> mover, Rect future_rect) {
@@ -75,7 +85,17 @@ public:
                     }
 
                     case BEDROCK: return true;
-                    case SPECIAL: return true;
+                    case SPECIAL: {
+                        if (type == CollidableType::BULLET) {
+                            game_map[i][j] = BLACK;
+                            if (base_destroyed_callback_) {
+                                wall_destroyed_callback_(j * TILE_SIZE, i * TILE_SIZE);
+                                base_destroyed_callback_();
+                            }
+                        }
+                        
+                        return true;
+                    }
                 }
             }
         }

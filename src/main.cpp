@@ -20,11 +20,12 @@ void setup(void) {
   Serial.begin(115200); // setting velocity of communication with pins
   
   //CountDown(tft);
-  Game TANKS(tft);
-  TANKS.start();
+  
 }
 
 void loop() {
-  
-  while (true) {};
+  while (true) {
+    Game TANKS(tft);
+    TANKS.start();
+  };
 }

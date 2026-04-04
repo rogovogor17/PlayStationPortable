@@ -14,4 +14,4 @@ enum TILE_TYPE {
     SPECIAL     = 4,
 };
 
-extern uint8_t game_map[MAP_HEIGHT][MAP_WIDTH];
+extern uint8_t map_level_1[MAP_HEIGHT][MAP_WIDTH];

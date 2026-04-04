@@ -2,7 +2,7 @@
 
 //////////////////////////////////////////////////
 //Every map shall contain 3 rows in the end declared as BEDROCK
-uint8_t game_map[MAP_HEIGHT][MAP_WIDTH] = {
+uint8_t map_level_1[MAP_HEIGHT][MAP_WIDTH] = {
     
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3},// Ряд 0
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3},// Ряд 1

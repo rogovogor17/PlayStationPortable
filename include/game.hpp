@@ -23,6 +23,7 @@ class Game final {
     TFT_eSPI& tft_;
     GameStatus status_ = GameStatus::IN_PROGRESS;
     CollisionManager collision_mgr_;
+    uint8_t game_map_[MAP_HEIGHT][MAP_WIDTH];
 
     std::vector<std::shared_ptr<Tank>> tanks_;
     std::vector<std::shared_ptr<Bullet>> bullets_;
@@ -31,10 +32,10 @@ class Game final {
 
     Button buttons_[BTN_COUNT];
 
-    bool is_running_ = false;
+    bool is_running_ = true;
 
     public:
-        Game(TFT_eSPI& tft) : tft_(tft),
+        Game(TFT_eSPI& tft) : tft_(tft), collision_mgr_(game_map_),
         buttons_{
             Button(BTN_UP_PIN),     // BTN_UP
             Button(BTN_DOWN_PIN),   // BTN_DOWN
@@ -46,9 +47,17 @@ class Game final {
             Button(BTN_B_PIN),      // BTN_B
             Button(BTN_PAUSA_PIN)}   // BTN_PAUSA 
         {
+            memcpy(game_map_, map_level_1, sizeof(game_map_));   
+
             collision_mgr_.set_wall_destroyed_callback(
                 [&tft](int x, int y) {
                     tft.fillRect(x, y, TILE_SIZE, TILE_SIZE, TFT_BLACK);
+                }
+            );
+
+            collision_mgr_.set_base_destroyed_callback(
+                [this]() { 
+                    status_ = GameStatus::OVER;  
                 }
             );
         };
