@@ -12,6 +12,8 @@ enum TILE_TYPE {
     BRICKS_WALL = 2,
     BEDROCK     = 3,
     SPECIAL     = 4,
+    SPAWN_POINTS= 5,
+    SPAWN_P1    = 6,
 };
 
 extern uint8_t map_level_1[MAP_HEIGHT][MAP_WIDTH];

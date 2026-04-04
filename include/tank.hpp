@@ -16,7 +16,7 @@ enum class TankState {
 
 class Tank : public Entity {
   const size_t max_health_, max_ammunition_; 
-  size_t health_, ammunition_, speed_; 
+  int health_, ammunition_, speed_; 
 
   bool is_valid_;
   bool active_ = true;
@@ -93,10 +93,11 @@ class Tank : public Entity {
       return CollidableType::TANK;
     }
 
+    void shoot() {ammunition_--;}
+
     bool canShoot() {
       unsigned long tmp = millis();
       if (tmp-lastShotTime >= shootCooldownMs && ammunition_ > 0) {
-        ammunition_--;
         lastShotTime = tmp;
         return true; 
       }
@@ -116,7 +117,7 @@ class Tank : public Entity {
 
     void update_orientation(int dx, int dy);
 
-    std::pair<int, int> count_nose_of_the_tank(int bullet_width, int bullet_length) {
+    std::pair<int, int> count_nose_of_the_tank(int bullet_width, int bullet_length) const {
       switch(orientation) {
         case DIR_UP:    return std::pair<int, int>(pos_x + width/2 - bullet_width/2, pos_y - bullet_length);  break;
         case DIR_DOWN:  return std::pair<int, int>(pos_x + width/2 - bullet_width/2, pos_y + height);         break;

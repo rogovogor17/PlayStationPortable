@@ -70,7 +70,7 @@ class Game final {
         void start(void);
 
         // function to update the status of buttons, can be used in the main loop to check for button presses
-        void draw_map();
+        Rect draw_map();
         void draw_map_part(Rect r);
         void draw_pause_screen();
         void draw_info_table();
@@ -84,7 +84,7 @@ class Game final {
         void create_tank(size_t x_pos, size_t y_pos, size_t health, size_t ammunition, size_t speed); 
         void delete_tank(size_t index);
         void delete_enemy_tanks(void); 
-        void create_flying_bullet();
+        void create_flying_bullet(std::shared_ptr<Tank> tank);
         bool is_out_of_bounds (Rect next);
         void cleanup_dead_objects();
 

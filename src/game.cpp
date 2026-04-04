@@ -9,9 +9,9 @@ void Game::start(void) {
   tft_.fillScreen(TFT_BLACK);
   tft_.setSwapBytes(true);
 
-  draw_map(); 
-  create_tank(X_CENTER-80, 2*Y_CENTER-40, 50, 5, 5); // creating a tank in the center of the screen with 50 health and 5 ammunition
-  create_tank(X_CENTER+80, 2*Y_CENTER-40, 50, 5, 5); // creating a tank in the center of the screen with 50 health and 5 ammunition
+  Rect tank_rect = draw_map(); 
+  create_tank(tank_rect.x, tank_rect.y, 50, 5, 5); // creating a tank in the center of the screen with 50 health and 5 ammunition
+
   register_collidables(); 
 
   bool was_paused = false;
@@ -76,7 +76,10 @@ void Game::execute_updates() {
   std::vector<Rect> dirty_rects;  
 
   if (buttons_[BTN_X].status_) {
-    if (tanks_[0]->canShoot()) create_flying_bullet();
+    if (tanks_[0]->canShoot()) {
+      tanks_[0]->shoot(); 
+      create_flying_bullet(tanks_[0]);
+    } 
   }
 
   int dx = 0, dy = 0;
@@ -185,9 +188,9 @@ void Game::delete_enemy_tanks(void) {
   }
 }
 
-void Game::create_flying_bullet() {
-  auto it = tanks_[0]->count_nose_of_the_tank(default_bullet_width, default_bullet_length);
-  auto bullet = std::make_shared<Bullet>(it.first, it.second, tanks_[0], default_bullet_speed, tft_);
+void Game::create_flying_bullet(std::shared_ptr<Tank> tank) {
+  auto it = tank->count_nose_of_the_tank(default_bullet_width, default_bullet_length);
+  auto bullet = std::make_shared<Bullet>(it.first, it.second, tank, default_bullet_speed, tft_);
   collision_mgr_.register_object(bullet);
   bullets_.push_back(std::move(bullet));
 }
@@ -197,7 +200,8 @@ void Game::draw_pause_screen() {
   tft_.fillRect(X_CENTER+10, Y_CENTER, TILE_SIZE/2, TILE_SIZE*4, TFT_WHITE);
 }
 
-void Game::draw_map() {
+Rect Game::draw_map() {
+  Rect tank_rect = {0};
   for (int i = 0; i < MAP_HEIGHT; i++) {
     for (int j = 0; j < MAP_WIDTH; j++) {
       uint32_t color = 0;
@@ -207,6 +211,10 @@ void Game::draw_map() {
         case BRICKS_WALL: color = TFT_BROWN;   break;
         case SPECIAL:     color = TFT_MAGENTA; break;
         case BEDROCK:     color = TFT_DARKGREY;break;
+        case SPAWN_P1: {
+          color = TFT_SILVER;
+          tank_rect.x = j*TILE_SIZE, tank_rect.y = i*TILE_SIZE; break;
+        } 
       }
 
       tft_.fillRect(j*TILE_SIZE, i*TILE_SIZE, TILE_SIZE, TILE_SIZE, color);
@@ -214,6 +222,7 @@ void Game::draw_map() {
   }
 
   draw_info_table();
+  return tank_rect;
 }
 
 void Game::draw_info_table() {
@@ -437,3 +446,4 @@ bool Game::is_out_of_bounds (Rect next) {
                           next.y < 0 || next.y + next.h > Y_MAX);
   return out_of_bounds;
 }
+
