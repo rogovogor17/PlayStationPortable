@@ -33,6 +33,11 @@ class Game final {
     Button buttons_[BTN_COUNT];
 
     bool is_running_ = true;
+    
+    int last_health_ = -1;
+    int last_ammo_ = -1;
+    int last_x_ = -1;
+    int last_y_ = -1;
 
     public:
         Game(TFT_eSPI& tft) : tft_(tft), collision_mgr_(game_map_),

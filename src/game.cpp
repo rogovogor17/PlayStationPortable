@@ -264,19 +264,13 @@ void draw_heart(TFT_eSPI& tft, int x, int y, int size = 10) {
 }
 
 
-void Game::print_tank_data_to_info_table(const Tank& tank, bool force_update) {
-  // Статические переменные сохраняют значение между вызовами
-  static int last_health = -1;
-  static int last_ammo = -1;
-  static int last_x = -1;
-  static int last_y = -1;
-  
+void Game::print_tank_data_to_info_table(const Tank& tank, bool force_update) {  
   // Если force_update == true, сбрасываем все статические переменные
   if (force_update) {
-    last_health = -1;
-    last_ammo = -1;
-    last_x = -1;
-    last_y = -1;
+    last_health_ = -1;
+    last_ammo_ = -1;
+    last_x_ = -1;
+    last_y_ = -1;
   }
   
   int current_health = tank.get_health();
@@ -290,10 +284,10 @@ void Game::print_tank_data_to_info_table(const Tank& tank, bool force_update) {
   
   // Обновляем HP (сердечки)
   int current_hearts = current_health / 10;
-  int last_hearts = (last_health == -1) ? -1 : last_health / 10;
+  int last_hearts = (last_health_ == -1) ? -1 : last_health_ / 10;
   
   if (current_hearts != last_hearts) {
-    last_health = current_health;
+    last_health_= current_health;
     
     // Очищаем область для сердечек (теперь на месте бывшей надписи HP)
     tft_.fillRect(frame_x + 10, frame_y + 38, 60, 16, TFT_BLACK);
@@ -312,8 +306,8 @@ void Game::print_tank_data_to_info_table(const Tank& tank, bool force_update) {
   }
   
   // Обновляем Ammo (желтые прямоугольники)
-  if (current_ammo != last_ammo) {
-    last_ammo = current_ammo;
+  if (current_ammo != last_ammo_) {
+    last_ammo_ = current_ammo;
     
     // Очищаем область для патронов
     tft_.fillRect(frame_x + 10, frame_y + 58, 60, 16, TFT_BLACK);
@@ -343,16 +337,16 @@ void Game::print_tank_data_to_info_table(const Tank& tank, bool force_update) {
   }
   
   // Обновляем X 
-  if (current_x != last_x) {
-    last_x = current_x;
+  if (current_x != last_x_) {
+    last_x_ = current_x;
     
     tft_.fillRect(frame_x + 30, frame_y + 78, 30, 16, TFT_BLACK);
     tft_.drawString(String(current_x), frame_x + 30, frame_y + 78, 1);
   }
   
   // Обновляем Y
-  if (current_y != last_y) {
-    last_y = current_y;
+  if (current_y != last_y_) {
+    last_y_ = current_y;
     
     tft_.fillRect(frame_x + 30, frame_y + 98, 30, 16, TFT_BLACK);
     tft_.drawString(String(current_y), frame_x + 30, frame_y + 98, 1);
