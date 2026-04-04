@@ -211,7 +211,7 @@ void Game::draw_map() {
   int frame_x = (MAP_WIDTH - 4) * TILE_SIZE;
   int frame_y = 0;
   int frame_width = 4 * TILE_SIZE;
-  int frame_height = 7 * TILE_SIZE;  // Увеличиваем для 4 строк
+  int frame_height = 6 * TILE_SIZE;  // Уменьшаем до 6 строк (убрали AMMO и HP надписи)
 
   // Внешняя рамка (объемный эффект)
   tft_.drawRect(frame_x, frame_y, frame_width, frame_height, TFT_WHITE);
@@ -231,12 +231,32 @@ void Game::draw_map() {
   tft_.drawString("IP 1", frame_x + 10, frame_y + 10, 2);
   tft_.drawLine(frame_x + 5, frame_y + 25, frame_x + frame_width - 5, frame_y + 25, TFT_WHITE);
   
-  // Подписи - все с одинаковым отступом
-  tft_.drawString("HP:",   frame_x + 10, frame_y + 38, 1);
-  tft_.drawString("AMMO:", frame_x + 10, frame_y + 58, 1);
+  // Убираем надписи HP и AMMO, оставляем только X и Y
+  // Вместо этого рисуем иконки
   tft_.drawString("X:",    frame_x + 10, frame_y + 78, 1);
   tft_.drawString("Y:",    frame_x + 10, frame_y + 98, 1);
 }
+
+void draw_heart(TFT_eSPI& tft, int x, int y, int size = 10) {
+  if (size == 10) {
+    for (int row = 0; row < 10; row++) {
+      for (int col = 0; col < 10; col++) {
+        if (heart_10x10[row][col]) {
+          tft.drawPixel(x + col, y + row, TFT_RED);
+        }
+      }
+    }
+  } else if (size == 8) {
+    for (int row = 0; row < 8; row++) {
+      for (int col = 0; col < 8; col++) {
+        if (heart_8x8[row][col]) {
+          tft.drawPixel(x + col, y + row, TFT_RED);
+        }
+      }
+    }
+  }
+}
+
 
 void Game::print_tank_data_to_info_table(const Tank& tank, bool force_update) {
   // Статические переменные сохраняют значение между вызовами
@@ -261,40 +281,75 @@ void Game::print_tank_data_to_info_table(const Tank& tank, bool force_update) {
   
   int frame_x = (MAP_WIDTH - 4) * TILE_SIZE;
   int frame_y = 0;
-  int value_x = frame_x + 40;
   
-  // Обновляем HP (сравнение будет работать, т.к. last_health = -1)
-  if (current_health != last_health) {
+  // Обновляем HP (сердечки)
+  int current_hearts = current_health / 10;
+  int last_hearts = (last_health == -1) ? -1 : last_health / 10;
+  
+  if (current_hearts != last_hearts) {
     last_health = current_health;
     
-    tft_.setTextColor(TFT_WHITE, TFT_BLACK);
-    tft_.setTextSize(1);
-    tft_.fillRect(value_x, frame_y + 38, 30, 16, TFT_BLACK);
-    tft_.drawString(String(current_health), value_x, frame_y + 38, 1);
+    // Очищаем область для сердечек (теперь на месте бывшей надписи HP)
+    tft_.fillRect(frame_x + 10, frame_y + 38, 60, 16, TFT_BLACK);
+    
+    // Рисуем сердечки в ряд
+    int max_hearts = 5; // Максимум 5 сердечек (50 HP)
+    for (int i = 0; i < max_hearts; i++) {
+      int heart_x = frame_x + 10 + (i * 12);
+      if (i < current_hearts) {
+        draw_heart(tft_, heart_x, frame_y + 40, 10);
+      } else {
+        // Рисуем пустое сердечко (контур)
+        tft_.drawRect(heart_x, frame_y + 40, 10, 10, TFT_DARKGREY);
+      }
+    }
   }
   
-  // Обновляем Ammo
+  // Обновляем Ammo (желтые прямоугольники)
   if (current_ammo != last_ammo) {
     last_ammo = current_ammo;
     
-    tft_.fillRect(value_x, frame_y + 58, 30, 16, TFT_BLACK);
-    tft_.drawString(String(current_ammo), value_x, frame_y + 58, 1);
+    // Очищаем область для патронов (теперь на месте бывшей надписи AMMO)
+    tft_.fillRect(frame_x + 10, frame_y + 58, 60, 16, TFT_BLACK);
+    
+    // Рисуем желтые прямоугольники (патроны)
+    int max_ammo = tanks_[0]->get_max_ammunition();
+    int ammo_to_show = min(current_ammo, max_ammo);
+    
+    for (int i = 0; i < max_ammo; i++) {
+      int ammo_x = frame_x + 10 + (i * 7);
+      if (i < ammo_to_show) {
+        tft_.fillRect(ammo_x, frame_y + 60, 5, 10, TFT_YELLOW);
+        tft_.fillRect(ammo_x, frame_y + 60, 5, 4,  TFT_BROWN);
+        // Добавляем блик для объема
+        tft_.drawLine(ammo_x + 1, frame_y + 61, ammo_x + 1, frame_y + 66, TFT_WHITE);
+      } else {
+        // Рисуем пустой контур патрона
+        tft_.drawRect(ammo_x, frame_y + 60, 5, 10, TFT_DARKGREY);
+      }
+    }
+    
+    // Если патронов больше чем помещается, показываем "+"
+    if (current_ammo > max_ammo) {
+      tft_.setTextColor(TFT_YELLOW, TFT_BLACK);
+      tft_.drawString("+", frame_x + 10 + (max_ammo * 7), frame_y + 60, 1);
+    }
   }
   
-  // Обновляем X
+  // Обновляем X (сдвигаем вниз, так как убрали надписи)
   if (current_x != last_x) {
     last_x = current_x;
     
-    tft_.fillRect(value_x, frame_y + 78, 30, 16, TFT_BLACK);
-    tft_.drawString(String(current_x), value_x, frame_y + 78, 1);
+    tft_.fillRect(frame_x + 30, frame_y + 78, 30, 16, TFT_BLACK);
+    tft_.drawString(String(current_x), frame_x + 30, frame_y + 78, 1);
   }
   
   // Обновляем Y
   if (current_y != last_y) {
     last_y = current_y;
     
-    tft_.fillRect(value_x, frame_y + 98, 30, 16, TFT_BLACK);
-    tft_.drawString(String(current_y), value_x, frame_y + 98, 1);
+    tft_.fillRect(frame_x + 30, frame_y + 98, 30, 16, TFT_BLACK);
+    tft_.drawString(String(current_y), frame_x + 30, frame_y + 98, 1);
   }
 }
 
