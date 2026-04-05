@@ -9,9 +9,12 @@ void Game::start(void) {
   tft_.fillScreen(TFT_BLACK);
   tft_.setSwapBytes(true);
 
-  Rect tank_rect = draw_map(); 
-  create_tank(tank_rect.x, tank_rect.y, 50, 5, 5); // creating a tank in the center of the screen with 50 health and 5 ammunition
-
+  std::vector<Rect> tank_rects = draw_map(); 
+  create_tank(tank_rects.front().x, tank_rects.front().y, 50, 5, 5); // creating a tank in the center of the screen with 50 health and 5 ammunition
+  if (tank_rects.size() >= 2) {
+    create_bot(tank_rects[1].x, tank_rects[1].y, 30, 5, 3); // creating a bot in the second spawn point with 30 health and 5 ammunition
+  }
+  
   register_collidables(); 
 
   bool was_paused = false;
@@ -46,7 +49,7 @@ void Game::start(void) {
       }
 
       case GameStatus::IN_PROGRESS: {
-        for (auto& tank : tanks_)   tank->update();
+        for (auto& tank : tanks_)       tank->update();
         for (auto& bullet : bullets_) bullet->update();
 
         execute_updates();
@@ -82,30 +85,8 @@ void Game::execute_updates() {
     } 
   }
 
-  int dx = 0, dy = 0;
-  int speed = tanks_[0]->get_speed();
-
-  if      (buttons_[BTN_UP].status_)    dy = -speed;
-  else if (buttons_[BTN_DOWN].status_)  dy =  speed;
-  else if (buttons_[BTN_LEFT].status_)  dx = -speed;
-  else if (buttons_[BTN_RIGHT].status_) dx =  speed;
-
-  if (dx != 0 || dy != 0) {
-    Rect next_r = tanks_[0]->get_collision_rect();
-    next_r.x += dx;
-    next_r.y += dy;
-
-    bool out_of_bounds = (next_r.x < 0 || next_r.x + next_r.w > X_MAX ||
-                          next_r.y < 0 || next_r.y + next_r.h > Y_MAX);
-    //update orientation even if it could not move in order to enable aiming
-    dirty_rects.push_back(tanks_[0]->get_collision_rect());
-    tanks_[0]->update_orientation(dx, dy);
-
-    if (!is_out_of_bounds(next_r) && !collision_mgr_.check_collisions(tanks_[0], next_r)) {
-      tanks_[0]->move(dx, dy); 
-    }
-    dirty_rects.push_back(tanks_[0]->get_collision_rect());
-  }
+  move_player(dirty_rects);
+  move_bots(dirty_rects);
 
   for (auto& tank : tanks_) {
     if (tank->is_exploding()) {
@@ -178,6 +159,16 @@ void Game::create_tank(size_t x_pos, size_t y_pos, size_t health, size_t ammunit
   }
 }
 
+void Game::create_bot(size_t x_pos, size_t y_pos, size_t health, size_t ammunition, size_t speed) {
+  auto bot = std::make_shared<BotTank>(x_pos, y_pos, health, ammunition, speed,  tft_);
+  bot->set_target(tanks_[0]); // Устанавливаем игрока в качестве цели для бота
+  bot->set_type(BotType::normal); // Устанавливаем тип бота (можно менять на easy или hard)
+  if (bot->is_valid()) {
+    bot->draw(); 
+    tanks_.push_back(std::move(bot)); 
+  }
+}
+
 void Game::delete_tank(size_t index) {
   tanks_.erase(tanks_.begin() + index);
 }
@@ -200,8 +191,8 @@ void Game::draw_pause_screen() {
   tft_.fillRect(X_CENTER+10, Y_CENTER, TILE_SIZE/2, TILE_SIZE*4, TFT_WHITE);
 }
 
-Rect Game::draw_map() {
-  Rect tank_rect = {0};
+std::vector<Rect> Game::draw_map() {
+  std::vector<Rect> tank_rects = {Rect{0, 0, 0, 0}};
   for (int i = 0; i < MAP_HEIGHT; i++) {
     for (int j = 0; j < MAP_WIDTH; j++) {
       uint32_t color = 0;
@@ -213,8 +204,17 @@ Rect Game::draw_map() {
         case BEDROCK:     color = TFT_DARKGREY;break;
         case SPAWN_P1: {
           color = TFT_SILVER;
-          tank_rect.x = j*TILE_SIZE, tank_rect.y = i*TILE_SIZE; break;
+          Rect tank_rect = {j*TILE_SIZE, i*TILE_SIZE, TILE_SIZE, TILE_SIZE};
+          tank_rects[0] = tank_rect;
+          break;
         } 
+
+        case SPAWN_POINTS: {
+          color = TFT_SILVER;
+          Rect tank_rect = {j*TILE_SIZE, i*TILE_SIZE, TILE_SIZE, TILE_SIZE};
+          tank_rects.push_back(tank_rect);
+          break;
+        }
       }
 
       tft_.fillRect(j*TILE_SIZE, i*TILE_SIZE, TILE_SIZE, TILE_SIZE, color);
@@ -222,7 +222,7 @@ Rect Game::draw_map() {
   }
 
   draw_info_table();
-  return tank_rect;
+  return tank_rects;
 }
 
 void Game::draw_info_table() {
@@ -447,3 +447,60 @@ bool Game::is_out_of_bounds (Rect next) {
   return out_of_bounds;
 }
 
+void Game::move_player(std::vector<Rect>& dirty_rects) {
+   int dx = 0, dy = 0;
+  int speed = tanks_[0]->get_speed();
+
+  if (buttons_[BTN_UP].status_)       dy = -speed;
+  else if (buttons_[BTN_DOWN].status_)  dy =  speed;
+  else if (buttons_[BTN_LEFT].status_)  dx = -speed;
+  else if (buttons_[BTN_RIGHT].status_) dx =  speed;
+
+  if (dx != 0 || dy != 0) {
+    Rect next_r = tanks_[0]->get_collision_rect();
+    next_r.x += dx;
+    next_r.y += dy;
+
+    dirty_rects.push_back(tanks_[0]->get_collision_rect());
+    tanks_[0]->update_orientation(dx, dy);
+
+    if (!is_out_of_bounds(next_r) && !collision_mgr_.check_collisions(tanks_[0], next_r)) {
+        tanks_[0]->move(dx, dy);
+    }
+    dirty_rects.push_back(tanks_[0]->get_collision_rect());
+  }
+}
+void Game::move_bots(std::vector<Rect>& dirty_rects) {
+  for (size_t i = 1; i < tanks_.size(); i++) {
+    auto& tank = tanks_[i];
+    
+    // Пропускаем взрывающиеся танки
+    if (tank->is_exploding()) continue;
+    
+    dirty_rects.push_back(tank->get_collision_rect());
+    
+    // Рассчитываем dx, dy на основе ориентации бота
+    int dx = 0, dy = 0;
+    int speed = tank->get_speed();
+    
+    // Определяем направление движения на основе текущей ориентации
+    switch(tank->getOrientation()) {
+      case DIR_UP:    dy = -speed; break;
+      case DIR_DOWN:  dy =  speed; break;
+      case DIR_LEFT:  dx = -speed; break;
+      case DIR_RIGHT: dx =  speed; break;
+    }
+    
+    if (dx != 0 || dy != 0) {
+      Rect next_r = tank->get_collision_rect();
+      next_r.x += dx;
+      next_r.y += dy;
+      
+      if (!is_out_of_bounds(next_r) && !collision_mgr_.check_collisions(tank, next_r)) {
+        tank->move(dx, dy);
+      }
+    }
+    
+    dirty_rects.push_back(tank->get_collision_rect());
+  }
+}

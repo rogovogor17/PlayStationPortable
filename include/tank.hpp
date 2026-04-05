@@ -56,7 +56,7 @@ class Tank : public Entity {
       explosion_timer_++; 
       if (ammunition_ < max_ammunition_) {
         reloadCounter_++;
-        if (reloadCounter_ >= 30) {  // каждые 5 тиков
+        if (reloadCounter_ >= 30) { 
             reloadCounter_ = 0;
             ammunition_++;
         }
@@ -128,11 +128,21 @@ class Tank : public Entity {
       return std::pair{0, 0};
     }    
 
-    size_t get_speed()          const {return speed_;}
-    size_t get_health()         const {return health_;}
-    size_t get_max_health()     const {return max_health_;}
-    size_t get_ammunition()     const {return ammunition_;}
-    size_t get_max_ammunition() const {return max_ammunition_;}
+    void set_speed(size_t speed) {speed_ = speed;}
+    void set_health(size_t health) {health_ = health;}
+    void set_ammunition(size_t ammo) {ammunition_ = ammo;}
+    void set_reload_counter(size_t counter) {reloadCounter_ = counter;}
+    unsigned long get_last_shot_time()  const noexcept { return lastShotTime; }
+    unsigned long get_shoot_cooldown()  const noexcept { return shootCooldownMs; }
+    unsigned long get_explosion_timer() const noexcept { return explosion_timer_; }
+    unsigned long get_reload_counter()  const noexcept { return reloadCounter_; }
+    void inc_explosion_timer()  noexcept { explosion_timer_++; } 
+    void inc_reload_counter()   noexcept { reloadCounter_++; }
+    int    get_speed()          const noexcept {return speed_;}
+    int    get_health()         const noexcept {return health_;}
+    int    get_ammunition()     const noexcept {return ammunition_;}
+    size_t get_max_health()     const noexcept {return max_health_;}
+    size_t get_max_ammunition() const noexcept {return max_ammunition_;}
 };
 
 #endif

@@ -8,6 +8,7 @@
 #include "CollisionManager.hpp"
 #include "Board_properties.hpp"
 #include "Tank.hpp"
+#include "BotTank.hpp"
 #include "Button.hpp"
 #include "Map.hpp"
 
@@ -38,6 +39,9 @@ class Game final {
     int last_ammo_ = -1;
     int last_x_ = -1;
     int last_y_ = -1;
+
+    void move_player(std::vector<Rect>& dirty_rects);
+    void move_bots(std::vector<Rect>& dirty_rects);
 
     public:
         Game(TFT_eSPI& tft) : tft_(tft), collision_mgr_(game_map_),
@@ -70,7 +74,7 @@ class Game final {
         void start(void);
 
         // function to update the status of buttons, can be used in the main loop to check for button presses
-        Rect draw_map();
+        std::vector<Rect> draw_map();
         void draw_map_part(Rect r);
         void draw_pause_screen();
         void draw_info_table();
@@ -82,6 +86,7 @@ class Game final {
         void register_collidables();
 
         void create_tank(size_t x_pos, size_t y_pos, size_t health, size_t ammunition, size_t speed); 
+        void create_bot( size_t x_pos, size_t y_pos, size_t health, size_t ammunition, size_t speed);
         void delete_tank(size_t index);
         void delete_enemy_tanks(void); 
         void create_flying_bullet(std::shared_ptr<Tank> tank);
