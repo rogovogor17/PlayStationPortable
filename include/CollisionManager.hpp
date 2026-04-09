@@ -4,12 +4,12 @@
 #include "Entity.hpp"
 
 class CollisionManager {
-    uint8_t (&game_map)[MAP_HEIGHT][MAP_WIDTH];
+    uint8_t (*game_map)[MAP_WIDTH];
     std::vector<std::weak_ptr<Entity>> objects_;
     std::function<void(int tileX, int tileY)> wall_destroyed_callback_;
     std::function<void(void)> base_destroyed_callback_;
 public:
-    CollisionManager(uint8_t (&map)[MAP_HEIGHT][MAP_WIDTH]) 
+    CollisionManager(uint8_t (*map)[MAP_WIDTH]) 
         : game_map(map)
     {}
     
@@ -22,6 +22,10 @@ public:
 
     void set_base_destroyed_callback(std::function<void()> callback) {
         base_destroyed_callback_ = std::move(callback);
+    }
+
+    void set_game_map(uint8_t (*map)[MAP_WIDTH]) {
+        game_map = map;
     }
     
     bool handle_collisions(std::shared_ptr<Entity> mover, Rect future_rect) {

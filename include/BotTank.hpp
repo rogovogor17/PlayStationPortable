@@ -1,12 +1,6 @@
 #pragma once
 #include "Tank.hpp"
 
-enum class BotType {
-    easy,
-    normal, 
-    hard,
-};
-
 class BotTank : public Tank {
 private:
     BotType type_ = BotType::easy;

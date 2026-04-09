@@ -14,6 +14,13 @@ enum class TankState {
   Dead  
 };
 
+enum class BotType {
+  easy,
+  normal, 
+  hard,
+  NAB, //not a bot
+};
+
 class Tank : public Entity {
   const size_t max_health_, max_ammunition_; 
   int health_, ammunition_, speed_; 

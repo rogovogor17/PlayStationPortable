@@ -6,13 +6,14 @@
 #include <vector>
 #include <memory>
 #include "CollisionManager.hpp"
-#include "Board_properties.hpp"
+#include "LevelManager.hpp"
 #include "Tank.hpp"
 #include "BotTank.hpp"
 #include "Button.hpp"
 #include "Map.hpp"
 
 constexpr size_t COUNT_DOWN = 5;
+extern Level levels[];
 
 enum class GameStatus {
     IN_PROGRESS,
@@ -23,7 +24,10 @@ enum class GameStatus {
 class Game final {
     TFT_eSPI& tft_;
     GameStatus status_ = GameStatus::IN_PROGRESS;
+
     CollisionManager collision_mgr_;
+    LevelManager     level_mgr_;
+
     uint8_t game_map_[MAP_HEIGHT][MAP_WIDTH];
 
     std::vector<std::shared_ptr<Tank>> tanks_;
@@ -44,7 +48,7 @@ class Game final {
     void move_bots(std::vector<Rect>& dirty_rects);
 
     public:
-        Game(TFT_eSPI& tft) : tft_(tft), collision_mgr_(game_map_),
+        Game(TFT_eSPI& tft) : tft_(tft), level_mgr_(levels, 3), collision_mgr_(nullptr), 
         buttons_{
             Button(BTN_UP_PIN),     // BTN_UP
             Button(BTN_DOWN_PIN),   // BTN_DOWN
@@ -54,9 +58,10 @@ class Game final {
             Button(BTN_Y_PIN),      // BTN_Y
             Button(BTN_A_PIN),      // BTN_A
             Button(BTN_B_PIN),      // BTN_B
-            Button(BTN_PAUSA_PIN)}   // BTN_PAUSA 
+            Button(BTN_PAUSA_PIN)}  // BTN_PAUSA 
         {
-            memcpy(game_map_, map_level_1, sizeof(game_map_));   
+            memcpy(game_map_, level_mgr_.get_current_level()->map, sizeof(game_map_));
+            collision_mgr_.set_game_map(game_map_);
 
             collision_mgr_.set_wall_destroyed_callback(
                 [&tft](int x, int y) {
