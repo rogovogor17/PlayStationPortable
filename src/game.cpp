@@ -1,7 +1,8 @@
 #include "../include/game.hpp"
 
 void Game::start(void) {
-  tft_.fillScreen(TFT_BLACK); // Getting rid of numbers and words being displyed on the screen
+  // Getting rid of numbers and words being displyed on the screen
+  tft_.fillScreen(TFT_BLACK); 
   tft_.setTextColor(TFT_WHITE);
 
   tft_.drawString("Game Start!", X_CENTER-50, Y_CENTER, 4);
@@ -10,12 +11,8 @@ void Game::start(void) {
   tft_.setSwapBytes(true);
 
   std::vector<Rect> tank_rects = draw_map(); 
-  create_tank(tank_rects.front().x, tank_rects.front().y, 50, 5, 5); // creating a tank in the center of the screen with 50 health and 5 ammunition
-  // if (tank_rects.size() >= 2) {
-  //   create_bot(tank_rects[1].x, tank_rects[1].y, BotType::normal); // creating a bot in the second spawn point with 30 health and 5 ammunition
-  // }
-  
-  //register_collidables(); 
+  //creating a tank in the center of the screen with 50 health and 5 ammunition
+  create_tank(tank_rects.front().x, tank_rects.front().y, 50, 5, 5); 
 
   bool was_paused = false;
   while (is_running_) { //main loop
@@ -52,7 +49,8 @@ void Game::start(void) {
         for (auto& tank : tanks_)       tank->update();
         for (auto& bullet : bullets_) bullet->update();
 
-        level_mgr_.update(); // Проверяем, нужно ли заспавнить бота или перейти на следующий уровень
+        // Проверяем, нужно ли заспавнить бота или перейти на следующий уровень
+        level_mgr_.update(); 
         execute_updates();
         cleanup_dead_objects();
 
@@ -88,17 +86,15 @@ void Game::execute_updates() {
         break;
       }
 
-      // case LevelAction::NEXT_LEVEL: {
-      //   level_mgr_.advance_to_next_level();
-      //   delete_enemy_tanks();
-      //   break;
-      // }
+      case LevelAction::NEXT_LEVEL: {
+        advance_to_next_level();
+        return; // Выходим из функции, чтобы не выполнять дальнейшие действия в этом цикле
+      }
 
-      // case LevelAction::RESTART_LEVEL: {
-      //   level_mgr_.restart_current_level();
-      //   delete_enemy_tanks();
-      //   break;
-      // }
+      case LevelAction::RESTART_LEVEL: {
+        advance_to_next_level();
+        return;
+      }
 
       default: break;
     }
@@ -198,7 +194,7 @@ void Game::create_tank(size_t x_pos, size_t y_pos, size_t health, size_t ammunit
 
 void Game::create_bot(size_t x_pos, size_t y_pos, BotType type) {
   auto bot = std::make_shared<BotTank>(x_pos, y_pos, 30, 5, 3,  tft_);
-  bot->set_type(BotType::normal); // Устанавливаем тип бота (можно менять на easy или hard)
+  bot->set_type(type); // Устанавливаем тип бота (можно менять на easy или hard)
   bot->set_valid_dir_callback([this](int speed, Rect current_rect) -> std::vector<Direction> {
     return collision_mgr_.get_valid_directions(speed, current_rect);
   });
@@ -544,4 +540,18 @@ void Game::move_bots(std::vector<Rect>& dirty_rects) {
     
     dirty_rects.push_back(tank->get_collision_rect());
   }
+}
+
+void Game::advance_to_next_level() {
+  delete_enemy_tanks();
+  tft_.fillScreen(TFT_BLACK);
+  level_mgr_.advance_to_next_level();
+  tft_.drawString("level " + String(level_mgr_.get_level_number()), X_CENTER-50, Y_CENTER, 4);
+  delay(1000);
+
+  memcpy(game_map_, level_mgr_.get_current_level()->map, sizeof(game_map_));
+  spawnPlace place = level_mgr_.get_player_spawn_point();
+  tanks_[0]->setPosition(place.x, place.y);
+  draw_map();
+  print_tank_data_to_info_table(*tanks_[0], true);
 }

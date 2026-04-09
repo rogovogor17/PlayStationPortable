@@ -16,10 +16,13 @@ private:
 
     bool level_started_    = true;
     uint32_t current_tick_ = 0;
+    int bots_to_spawn = 0;
 
     std::optional<LevelAction> action_;
     int last_spawn_x_ = 0, last_spawn_y_ = 0;
     BotType last_spawn_bot_type_ = BotType::normal;
+
+    std::function<bool(void)> is_field_empty_callback_;
     
     void scan_spawn_points(Level& level) {
         for (int y = 0; y < MAP_HEIGHT; y++) {
@@ -47,11 +50,11 @@ public:
             levels_.push_back(level);
         }
 
+        bots_to_spawn = levels[0].amount_of_bots_to_spawn;
         level_started_ = true;
     }
 
     void update() {
-        
         if (!level_started_) {
             action_ = std::nullopt;
             return;
@@ -64,18 +67,33 @@ public:
             if (current_tick_%levels_[current_level_].time_between_spawns_tick == 0) {
                 choose_location_of_spawn();
                 choose_type_of_bot();
-                levels_[current_level_].amount_of_bots_to_spawn--;
+                bots_to_spawn--;
                 action_ = LevelAction::CREATE_BOT; 
             }
         }
 
-        // else if (is_all_bots_spawned() && tanks_.empty()) {
-        //     if (!is_last_level()) {
-        //         return LevelAction::NEXT_LEVEL;
-        //     } else {
-        //         return LevelAction::RESTART_LEVEL;
-        //     }
-        // }
+        else if (is_field_empty_callback_()) {
+            if (!is_last_level()) {
+                action_ = LevelAction::NEXT_LEVEL;
+            } else {
+                action_ = LevelAction::RESTART_LEVEL;
+            }
+        }
+    }
+
+    void advance_to_next_level() {
+        current_tick_ = 0;
+        level_started_ = true;
+        action_ = std::nullopt;
+        last_spawn_x_ = 0;
+        last_spawn_y_ = 0;
+        BotType last_spawn_bot_type_ = BotType::normal;
+        
+        if (!next_level()) {
+            restart();
+        }
+
+        bots_to_spawn = levels_[current_level_].amount_of_bots_to_spawn;
     }
 
     void choose_location_of_spawn() {
@@ -93,18 +111,22 @@ public:
         int random_index = rand() % 3;  // 0, 1, 2
         
         switch(random_index) {
-        case 0: last_spawn_bot_type_ = BotType::easy; break;
-        case 1: last_spawn_bot_type_ = BotType::normal; break;
-        case 2: last_spawn_bot_type_ = BotType::hard; break;
+            case 0: last_spawn_bot_type_ = BotType::easy; break;
+            case 1: last_spawn_bot_type_ = BotType::normal; break;
+            case 2: last_spawn_bot_type_ = BotType::hard; break;
+        }
     }
+
+    void set_is_field_empty_callback(std::function<bool(void)> callback) {
+        is_field_empty_callback_ = callback;
     }
-    
+
     Level* get_current_level() noexcept{
         return &levels_[current_level_];
     }
 
     bool is_all_bots_spawned() const noexcept {
-        return levels_[current_level_].amount_of_bots_to_spawn == 0;
+        return bots_to_spawn == 0;
     }
     
     bool load_level(size_t level_index) noexcept {
@@ -117,6 +139,10 @@ public:
         if (current_level_ + 1 >= levels_.size()) return false;
         current_level_++;
         return true;
+    }
+
+    void restart() noexcept {
+        current_level_ = 0;
     }
     
     bool is_last_level() const noexcept {
@@ -141,5 +167,9 @@ public:
 
     BotType get_last_spawn_bot_type() const noexcept {
         return last_spawn_bot_type_;
+    }
+
+    spawnPlace get_player_spawn_point() const noexcept {
+        return levels_[current_level_].spawn_place_p1;
     }
 };

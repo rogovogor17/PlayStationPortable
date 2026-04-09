@@ -62,6 +62,10 @@ class Game final {
             Button(BTN_PAUSA_PIN)}  // BTN_PAUSA 
         {
             memcpy(game_map_, level_mgr_.get_current_level()->map, sizeof(game_map_));
+            level_mgr_.set_is_field_empty_callback(
+                [this]() { return tanks_.size() == 1;}
+            );
+
             collision_mgr_.set_game_map(game_map_);
 
             collision_mgr_.set_wall_destroyed_callback(
@@ -88,6 +92,7 @@ class Game final {
 
         void check_updates_buttons(void); //input_manager
         void execute_updates();
+        void advance_to_next_level();
 
         void register_collidables();
 
