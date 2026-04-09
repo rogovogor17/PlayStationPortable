@@ -85,6 +85,15 @@ void Game::execute_updates() {
     } 
   }
 
+  for (size_t i = 1; i < tanks_.size(); ++i) {
+    // Используем static_pointer_cast вместо dynamic_pointer_cast
+    auto bot = std::static_pointer_cast<BotTank>(tanks_[i]);
+    if (bot->fired_) {
+      bot->fired_ = false;
+      create_flying_bullet(tanks_[i]);
+    }
+  }
+
   move_player(dirty_rects);
   move_bots(dirty_rects);
 
@@ -116,7 +125,7 @@ void Game::execute_updates() {
       continue;
     }
 
-    if (collision_mgr_.check_collisions(bullet, rect)) {
+    if (collision_mgr_.handle_collisions(bullet, rect)) {
       //all necessary operations are done in collision manager
     } 
     else {
@@ -161,8 +170,8 @@ void Game::create_tank(size_t x_pos, size_t y_pos, size_t health, size_t ammunit
 
 void Game::create_bot(size_t x_pos, size_t y_pos, size_t health, size_t ammunition, size_t speed) {
   auto bot = std::make_shared<BotTank>(x_pos, y_pos, health, ammunition, speed,  tft_);
-  bot->set_target(tanks_[0]); // Устанавливаем игрока в качестве цели для бота
   bot->set_type(BotType::normal); // Устанавливаем тип бота (можно менять на easy или hard)
+
   if (bot->is_valid()) {
     bot->draw(); 
     tanks_.push_back(std::move(bot)); 
@@ -464,8 +473,8 @@ void Game::move_player(std::vector<Rect>& dirty_rects) {
     dirty_rects.push_back(tanks_[0]->get_collision_rect());
     tanks_[0]->update_orientation(dx, dy);
 
-    if (!is_out_of_bounds(next_r) && !collision_mgr_.check_collisions(tanks_[0], next_r)) {
-        tanks_[0]->move(dx, dy);
+    if (!is_out_of_bounds(next_r) && !collision_mgr_.handle_collisions(tanks_[0], next_r)) {
+      tanks_[0]->move(dx, dy);
     }
     dirty_rects.push_back(tanks_[0]->get_collision_rect());
   }
@@ -496,7 +505,7 @@ void Game::move_bots(std::vector<Rect>& dirty_rects) {
       next_r.x += dx;
       next_r.y += dy;
       
-      if (!is_out_of_bounds(next_r) && !collision_mgr_.check_collisions(tank, next_r)) {
+      if (!is_out_of_bounds(next_r) && !collision_mgr_.handle_collisions(tank, next_r)) {
         tank->move(dx, dy);
       }
     }

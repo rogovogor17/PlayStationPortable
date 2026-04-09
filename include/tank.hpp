@@ -69,6 +69,29 @@ class Tank : public Entity {
       return {pos_x, pos_y, width, height};
     }
 
+    Rect get_next_position_rect(Direction dir) const {
+      Rect current_rect = get_collision_rect();
+      Rect next_rect = current_rect;
+      int speed = get_speed();
+      
+      switch(dir) {
+        case Direction::DIR_UP:    
+          next_rect.y -= speed; 
+          break;
+        case Direction::DIR_DOWN:  
+          next_rect.y += speed; 
+          break;
+        case Direction::DIR_LEFT:  
+          next_rect.x -= speed; 
+          break;
+        case Direction::DIR_RIGHT: 
+          next_rect.x += speed; 
+          break;
+      }
+      
+      return next_rect;
+    }
+
     void on_collision(std::shared_ptr<Entity> other) override {
       auto type = other->get_type();
       

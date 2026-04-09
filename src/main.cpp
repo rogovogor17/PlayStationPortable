@@ -17,8 +17,9 @@ void setup(void) {
   delay(1000); // delay for 2 seconds to show the name of the game
   tft.fillScreen(TFT_BLACK);
 
-  Serial.begin(115200); // setting velocity of communication with pins
   
+
+  Serial.begin(115200); // setting velocity of communication with pins
   //CountDown(tft);
   
 }

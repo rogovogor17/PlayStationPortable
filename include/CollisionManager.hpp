@@ -24,7 +24,7 @@ public:
         base_destroyed_callback_ = std::move(callback);
     }
     
-    bool check_collisions(std::shared_ptr<Entity> mover, Rect future_rect) {
+    bool handle_collisions(std::shared_ptr<Entity> mover, Rect future_rect) {
         bool has_collision = false;
         for (auto& weak_target : objects_) {
             auto target = weak_target.lock();
