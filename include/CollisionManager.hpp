@@ -101,4 +101,76 @@ public:
         }
         return false;
     }
+
+    std::vector<Direction> get_valid_directions(int speed, Rect current_rect) {
+        std::vector<Direction> valid_directions;
+        
+        // Проверка движения вверх
+        Rect up_rect = current_rect;
+        up_rect.y -= speed;
+        if (!is_colliding_with_map(up_rect)) {
+            valid_directions.push_back(DIR_UP);
+        }
+        
+        // Проверка движения вниз
+        Rect down_rect = current_rect;
+        down_rect.y += speed;
+        if (!is_colliding_with_map(down_rect)) {
+            valid_directions.push_back(DIR_DOWN);
+        }
+        
+        // Проверка движения влево
+        Rect left_rect = current_rect;
+        left_rect.x -= speed;
+        if (!is_colliding_with_map(left_rect)) {
+            valid_directions.push_back(DIR_LEFT);
+        }
+        
+        // Проверка движения вправо
+        Rect right_rect = current_rect;
+        right_rect.x += speed;
+        if (!is_colliding_with_map(right_rect)) {
+            valid_directions.push_back(DIR_RIGHT);
+        }
+        
+        return valid_directions;
+    }
+
+    bool is_colliding_with_map(const Rect& rect) {
+        if (!game_map) return true;
+        
+        // Проверка границ
+        if (rect.x < 0 || rect.x + rect.w > X_MAX ||
+            rect.y < 0 || rect.y + rect.h > Y_MAX) {
+            return true;
+        }
+        
+        // Получаем центральную клетку танка
+        int center_x = (rect.x + rect.w / 2) / TILE_SIZE;
+        int center_y = (rect.y + rect.h / 2) / TILE_SIZE;
+        
+        // Проверяем только центральную клетку и клетки по краям
+        int left_tile   = rect.x / TILE_SIZE;
+        int right_tile  = (rect.x + rect.w - 1) / TILE_SIZE;
+        int top_tile    = rect.y / TILE_SIZE;
+        int bottom_tile = (rect.y + rect.h - 1) / TILE_SIZE;
+        
+        // Проверяем только угловые точки (4 клетки максимум)
+        int tiles_x[] = {left_tile, right_tile};
+        int tiles_y[] = {top_tile, bottom_tile};
+        
+        for (int ty : tiles_y) {
+            for (int tx : tiles_x) {
+                if (tx >= 0 && tx < MAP_WIDTH && ty >= 0 && ty < MAP_HEIGHT) {
+                    if (
+                        game_map[ty][tx] == BRICKS_WALL || 
+                        game_map[ty][tx] == BEDROCK) {
+                        return true;
+                    }
+                }
+            }   
+        }
+        
+        return false;
+    }
 };

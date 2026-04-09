@@ -19,7 +19,9 @@ private:
     
     void make_decision();
     void handle_movement();
-    
+
+    std::function<std::vector<Direction>(int speed, Rect current_rect)> get_valid_dir_callback_;
+
 public:
 
     bool fired_ = false;
@@ -34,7 +36,14 @@ public:
     
     void set_type(const BotType& type);
 
-    void shoot() {fired_ = true;}
+    void set_valid_dir_callback(std::function<std::vector<Direction>(int speed, Rect current_rect)> callback) {
+        get_valid_dir_callback_ = std::move(callback);
+    }
+
+    void shoot() {
+        fired_ = true;
+        on_shot_fired();
+    }
     bool wants_to_shoot();
     void on_shot_fired() { last_shot_time_ = millis(); }
 };

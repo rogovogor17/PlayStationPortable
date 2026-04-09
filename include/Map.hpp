@@ -1,7 +1,7 @@
 #pragma once 
 
 #include <stdint.h>
-
+#include "board_properties.hpp"
 constexpr int TILE_SIZE  = 20; 
 constexpr int MAP_WIDTH  = 24;
 constexpr int MAP_HEIGHT = 16;

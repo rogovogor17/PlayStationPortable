@@ -41,6 +41,18 @@ void BotTank::make_decision() {
     if (wants_to_shoot()) {
         shoot();
     }
+
+    if (get_valid_dir_callback_) {
+        Rect current_rect = get_collision_rect();
+        int speed = get_speed();
+        
+        std::vector<Direction> valid_dirs = get_valid_dir_callback_(speed, current_rect);
+        
+        if (!valid_dirs.empty()) {
+            int random_index = rand() % valid_dirs.size();
+            setOrientation(valid_dirs[random_index]);
+        }
+    }
 }
 
 bool BotTank::wants_to_shoot() {

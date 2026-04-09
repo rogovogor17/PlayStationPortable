@@ -171,7 +171,9 @@ void Game::create_tank(size_t x_pos, size_t y_pos, size_t health, size_t ammunit
 void Game::create_bot(size_t x_pos, size_t y_pos, size_t health, size_t ammunition, size_t speed) {
   auto bot = std::make_shared<BotTank>(x_pos, y_pos, health, ammunition, speed,  tft_);
   bot->set_type(BotType::normal); // Устанавливаем тип бота (можно менять на easy или hard)
-
+  bot->set_valid_dir_callback([this](int speed, Rect current_rect) -> std::vector<Direction> {
+    return collision_mgr_.get_valid_directions(speed, current_rect);
+  });
   if (bot->is_valid()) {
     bot->draw(); 
     tanks_.push_back(std::move(bot)); 
