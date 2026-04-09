@@ -5,6 +5,7 @@
 #include <TFT_eSPI.h> 
 #include <vector>
 #include <memory>
+#include <optional>
 #include "CollisionManager.hpp"
 #include "LevelManager.hpp"
 #include "Tank.hpp"
@@ -91,7 +92,7 @@ class Game final {
         void register_collidables();
 
         void create_tank(size_t x_pos, size_t y_pos, size_t health, size_t ammunition, size_t speed); 
-        void create_bot( size_t x_pos, size_t y_pos, size_t health, size_t ammunition, size_t speed);
+        void create_bot( size_t x_pos, size_t y_pos, BotType type);
         void delete_tank(size_t index);
         void delete_enemy_tanks(void); 
         void create_flying_bullet(std::shared_ptr<Tank> tank);

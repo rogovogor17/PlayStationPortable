@@ -3,14 +3,6 @@
 //////////////////////////////////////////////////
 //Every map shall contain 3 rows in the end declared as BEDROCK
 
-// struct Level {
-//     uint8_t* map;
-//     spawnPlace place_p1;
-//     std::vector<spawnPlace> spawns; // x, y
-//     uint16_t time_limit_ms; 
-// };
-
-
 uint8_t map_level_1[MAP_HEIGHT][MAP_WIDTH] = {
     
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3},// Ряд 0
@@ -73,17 +65,26 @@ uint8_t map_level_3[MAP_HEIGHT][MAP_WIDTH] = {
 
 struct Level attributes_level_1 = {
     .map = map_level_1,
-    .time_limit_ms = 10000,
+    .spawn_place_p1 = {0, 0},             
+    .amount_of_bots_to_spawn = 3,
+    .bot_spawns = {},                      
+    .time_between_spawns_tick = 100,
 };
 
 struct Level attributes_level_2 = {
     .map = map_level_2,
-    .time_limit_ms = 10000,
+    .spawn_place_p1 = {0, 0},
+    .amount_of_bots_to_spawn = 5,
+    .bot_spawns = {},
+    .time_between_spawns_tick = 50,
 };
 
 struct Level attributes_level_3 = {
     .map = map_level_3,
-    .time_limit_ms = 10000,
+    .spawn_place_p1 = {0, 0},
+    .amount_of_bots_to_spawn = 10,
+    .bot_spawns = {},
+    .time_between_spawns_tick = 50,
 };
 
 Level levels[] = {attributes_level_1, attributes_level_2, attributes_level_3};

@@ -11,11 +11,11 @@ void Game::start(void) {
 
   std::vector<Rect> tank_rects = draw_map(); 
   create_tank(tank_rects.front().x, tank_rects.front().y, 50, 5, 5); // creating a tank in the center of the screen with 50 health and 5 ammunition
-  if (tank_rects.size() >= 2) {
-    create_bot(tank_rects[1].x, tank_rects[1].y, 30, 5, 3); // creating a bot in the second spawn point with 30 health and 5 ammunition
-  }
+  // if (tank_rects.size() >= 2) {
+  //   create_bot(tank_rects[1].x, tank_rects[1].y, BotType::normal); // creating a bot in the second spawn point with 30 health and 5 ammunition
+  // }
   
-  register_collidables(); 
+  //register_collidables(); 
 
   bool was_paused = false;
   while (is_running_) { //main loop
@@ -52,6 +52,7 @@ void Game::start(void) {
         for (auto& tank : tanks_)       tank->update();
         for (auto& bullet : bullets_) bullet->update();
 
+        level_mgr_.update(); // Проверяем, нужно ли заспавнить бота или перейти на следующий уровень
         execute_updates();
         cleanup_dead_objects();
 
@@ -76,7 +77,32 @@ void Game::check_updates_buttons(void) {
 
 void Game::execute_updates() {
 
-  std::vector<Rect> dirty_rects;  
+  std::vector<Rect> dirty_rects; 
+  auto action = level_mgr_.get_action(); // Получаем действие, которое нужно выполнить (например, создать бота)
+  if (action.has_value()) {
+    switch(action.value()) {
+      case LevelAction::CREATE_BOT: {
+        auto spawn_location = level_mgr_.get_last_spawn_location();
+        auto bot_type = level_mgr_.get_last_spawn_bot_type();
+        create_bot(spawn_location.first, spawn_location.second, bot_type); // Создаем бота в указанной точке спавна
+        break;
+      }
+
+      // case LevelAction::NEXT_LEVEL: {
+      //   level_mgr_.advance_to_next_level();
+      //   delete_enemy_tanks();
+      //   break;
+      // }
+
+      // case LevelAction::RESTART_LEVEL: {
+      //   level_mgr_.restart_current_level();
+      //   delete_enemy_tanks();
+      //   break;
+      // }
+
+      default: break;
+    }
+  }
 
   if (buttons_[BTN_X].status_) {
     if (tanks_[0]->canShoot()) {
@@ -166,10 +192,12 @@ void Game::create_tank(size_t x_pos, size_t y_pos, size_t health, size_t ammunit
     tank->draw(); 
     tanks_.push_back(std::move(tank)); 
   }
+
+  collision_mgr_.register_object(tanks_.back());
 }
 
-void Game::create_bot(size_t x_pos, size_t y_pos, size_t health, size_t ammunition, size_t speed) {
-  auto bot = std::make_shared<BotTank>(x_pos, y_pos, health, ammunition, speed,  tft_);
+void Game::create_bot(size_t x_pos, size_t y_pos, BotType type) {
+  auto bot = std::make_shared<BotTank>(x_pos, y_pos, 30, 5, 3,  tft_);
   bot->set_type(BotType::normal); // Устанавливаем тип бота (можно менять на easy или hard)
   bot->set_valid_dir_callback([this](int speed, Rect current_rect) -> std::vector<Direction> {
     return collision_mgr_.get_valid_directions(speed, current_rect);
@@ -178,6 +206,8 @@ void Game::create_bot(size_t x_pos, size_t y_pos, size_t health, size_t ammuniti
     bot->draw(); 
     tanks_.push_back(std::move(bot)); 
   }
+
+  collision_mgr_.register_object(tanks_.back());
 }
 
 void Game::delete_tank(size_t index) {

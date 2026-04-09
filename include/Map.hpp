@@ -9,8 +9,6 @@ constexpr int TILE_SIZE  = 20;
 constexpr int MAP_WIDTH  = 24;
 constexpr int MAP_HEIGHT = 16;
 
-enum class BotType;
-
 enum TILE_TYPE {
     BLACK       = 0,
     GRASS       = 1, 
@@ -23,14 +21,14 @@ enum TILE_TYPE {
 
 struct spawnPlace {
     int x, y;
-    std::set<BotType> botsFlow;
 };
 
 struct Level {
     uint8_t (*map)[MAP_WIDTH];
     spawnPlace spawn_place_p1;
+    int amount_of_bots_to_spawn;
     std::vector<spawnPlace> bot_spawns; // x, y
-    uint16_t time_limit_ms; 
+    uint16_t time_between_spawns_tick; 
 };
 
 extern uint8_t map_level_1[MAP_HEIGHT][MAP_WIDTH];
