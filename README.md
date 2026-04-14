@@ -129,4 +129,4 @@ class Tank {
 
 
 Текущий прогресс
-![alt text](image.png)
+![alt text](img/image.png)
