@@ -271,7 +271,7 @@ Printing settings (common for PLA):
 - Infill: 20% grid
 - Supports: for the edges of the supporting parts of the body
 
-The model files are available in the `case/` folder.
+The model files are available in the `case/` directory.
 
 ![Case preview](img/case.png 'Case assemble')
 
