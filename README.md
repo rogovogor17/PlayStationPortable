@@ -73,7 +73,7 @@ DIY portable game console inspired by classic handhelds, built around the ESP32 
 | **PlatformIO Project** | Modern C++ (GNU++14), easy to build and upload                                 |
 | **Modular Code**       | Object‑oriented design: `Tank`, `Bullet`, `Wall`, etc.                         |
 
-![Gameplay screenshot](img/image.png 'Battle City on ESP32')
+![Gameplay screenshot](img/result.png 'Battle City on ESP32')
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -169,20 +169,22 @@ First running may take a few minutes - PlatformIO will download necessary librar
 | GPIO 15   | TFT CS         | Display CS              |
 | GPIO 2    | TFT DC         | Display DC              |
 | GPIO 4    | TFT RST        | Display RST             |
-| GPIO 23   | TFT MOSI       | Display SDA/SDI         |
+| GPIO 23   | TFT MOSI       | Display SDI/MOSI        |
 | GPIO 18   | TFT SCK        | Display SCK             |
-| GPIO 19   | TFT MISO       | Display SDO (optional)  |
-| GPIO 32   | Button UP      | Pull‑up + button to GND |
+| GPIO 19   | TFT MISO       | Display SDO/MISO        |
+| GPIO 17   | Button UP      | Pull‑up + button to GND |
 | GPIO 33   | Button DOWN    | Pull‑up + button to GND |
 | GPIO 25   | Button LEFT    | Pull‑up + button to GND |
-| GPIO 26   | Button RIGHT   | Pull‑up + button to GND |
+| GPIO 19   | Button RIGHT   | Pull‑up + button to GND |
 | GPIO 27   | Button FIRE    | Pull‑up + button to GND |
-| GPIO 14   | Button START   | Pull‑up + button to GND |
+| GPIO 26   | Button START   | Pull‑up + button to GND |
 | GPIO 12   | Button EXTRA 1 | Pull‑up + button to GND |
 | GPIO 13   | Button EXTRA 2 | Pull‑up + button to GND |
-| GPIO 5    | Button EXTRA 3 | Pull‑up + button to GND |
+| GPIO 14   | Button EXTRA 3 | Pull‑up + button to GND |
 | GND       | Common ground  | All buttons, display    |
 | 3.3V      | Power (logic)  | Display VCC             |
+
+![Schematic preview](img/setup.jpg 'Schematic assemble')
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
